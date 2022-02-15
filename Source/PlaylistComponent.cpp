@@ -56,6 +56,13 @@ PlaylistComponent::PlaylistComponent(AudioPlayer* _player1, AudioPlayer* _player
 
     addSongToMyLibraryButton.addListener(this);
 
+    searchBox.addListener(this);
+    searchBox.setTextToShowWhenEmpty(String{ "Search in your library" },juce::Colours::greenyellow);    
+    /*searchBox.setColour(1, juce::Colours::white);
+    searchBox.setColour(2, juce::Colours::white);
+    searchBox.setColour(3, juce::Colours::white);
+    searchBox.setColour(4, juce::Colours::white);*/
+
     startTimer(500);
 }
 
@@ -92,7 +99,8 @@ void PlaylistComponent::resized()
     float heightTenth = getHeight()/10;    
     float widthTenth = getWidth()/10;
 
-    tableComponent.setBounds(0, 0, getWidth(), heightTenth*6);
+    tableComponent.setBounds(0, 0, getWidth(), heightTenth*6-30);
+    searchBox.setBounds(0, heightTenth * 6 - 30, getWidth(), 30);
     DBG(std::to_string(heightTenth * 6));
     addSongToMyLibraryButton.setBounds(0, heightTenth * 6, getWidth(), 30);
     
@@ -103,7 +111,7 @@ void PlaylistComponent::resized()
 
 int PlaylistComponent::getNumRows(){
     //return 0;
-    return trackTitles.size();
+    return userFilteredTrackTitles.size();
 };
 void PlaylistComponent::paintRowBackground(Graphics& g, int rowNumber, int width, int height, bool rowIsSelected){
     if (rowIsSelected) {
@@ -116,7 +124,12 @@ void PlaylistComponent::paintRowBackground(Graphics& g, int rowNumber, int width
 
 void PlaylistComponent::paintCell(Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected) {
     if (columnId == 1) {
-        g.drawText(trackTitles[rowNumber], 2, 0, width - 4, height, Justification::centredLeft, false);
+        /*if (userFilteredTrackTitles.size() > 0) {
+            g.drawText(userFilteredTrackTitles[rowNumber], 2, 0, width - 4, height, Justification::centredLeft, false);
+        }
+        else {*/
+            g.drawText(userFilteredTrackTitles[rowNumber], 2, 0, width - 4, height, Justification::centredLeft, false);
+        /*}        */
     };
 
     if (columnId == 2) {
@@ -126,8 +139,7 @@ void PlaylistComponent::paintCell(Graphics& g, int rowNumber, int columnId, int 
 };
 
 Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component* existingComponentToUpdate) {
-    if (columnId == 1) {
-        //existingComponentToUpdate.
+    if (columnId == 1) {        
     };
 
     if (columnId == 2) {
@@ -137,9 +149,10 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
         if (existingComponentToUpdate == nullptr) {            
             TextButton* button = new TextButton{ "Play on deck 1" };
             button->addListener(this);                                   
-            //String id{std::to_string(rowNumber) + std::to_string(columnId) };            
-            String id(std::to_string(oddButtonIdCounter));
-            button->setComponentID(id);
+            //String id{std::to_string(rowNumber) + std::to_string(columnId) };                                   
+            //String id(std::to_string(oddButtonIdCounter));
+            //button->setComponentID(id);
+            button->setComponentID("1" + userFilteredTrackTitles[rowNumber]);
             existingComponentToUpdate = button;
             oddButtonIdCounter= oddButtonIdCounter + 2;
         }
@@ -149,14 +162,41 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
             TextButton* button = new TextButton{ "Play on deck 2" };
             button->addListener(this);
             //String id{ std::to_string(rowNumber) + std::to_string(columnId) };            
-            String id{ std::to_string(evenButtonIdCounter)};
-            button->setComponentID(id);
+            //String id{ std::to_string(evenButtonIdCounter)};
+            //button->setComponentID(id);
+            button->setComponentID("2" + userFilteredTrackTitles[rowNumber]);
             existingComponentToUpdate = button;
             evenButtonIdCounter = evenButtonIdCounter+2;
         }
     }
     return existingComponentToUpdate;
 }
+
+void PlaylistComponent::textEditorTextChanged(TextEditor&) {
+        
+    std::string searchTerm = searchBox.getText().toStdString();       
+    
+    //std::string searchTermInLowerCase = searchTerm;
+    //std::transform(searchTermInLowerCase.begin(), searchTermInLowerCase.end(), searchTermInLowerCase.begin(), [](unsigned char c) { return std::tolower(c); });
+    std::vector<std::string> trackTitlesInLowerCase = trackTitles;
+    //std::transform(trackTitlesInLowerCase.begin(), trackTitlesInLowerCase.end(), trackTitlesInLowerCase.begin(), ::tolower);
+    
+    /*for (std::string& song : trackTitlesInLowerCase) {
+        std::transform(song.begin(), song.end(), song.begin(),
+            [](char c) { return std::tolower(c); });
+    }*/
+
+    std::vector<std::string> auxiliaryCopy;
+
+    std::copy_if(trackTitles.begin(), trackTitles.end(), std::back_inserter(auxiliaryCopy), [searchTerm](std::string song) {return song.rfind(searchTerm,0)==0; });
+    //std::copy_if(trackTitles.begin(), trackTitles.end(), std::back_inserter(trackFilesUrl), [searchTerm](std::string song) {return song.rfind(searchTerm, 0) == 0; });
+
+    
+    userFilteredTrackTitles = auxiliaryCopy;
+
+    tableComponent.updateContent();
+    
+};
 
 void PlaylistComponent::buttonClicked(Button* button) {    
     if (button == &addSongToMyLibraryButton)
@@ -179,15 +219,18 @@ void PlaylistComponent::buttonClicked(Button* button) {
             auto minutesAndSecondsString = std::to_string(minutes) + ":" + std::to_string(seconds);
 
             auto songName = chooser.getResult().getFileName().toStdString();
+            userFilteredTrackTitles.push_back(chooser.getResult().getFileName().toStdString());
             trackTitles.push_back(chooser.getResult().getFileName().toStdString());
             trackDuration.push_back(minutesAndSecondsString);
-            trackFilesUrl.push_back(URL{ chooser.getResult() });
+            //trackFilesUrl.push_back(URL{ chooser.getResult() });
+
+            trackTitlesToURLs[chooser.getResult().getFileName().toStdString()] = URL{ chooser.getResult() };
             
 
             auto dinamicObject = std::make_unique<DynamicObject>();
             dinamicObject->setProperty("name", chooser.getResult().getFileName());
-            String mio = minutesAndSecondsString;
-            dinamicObject->setProperty("duration",mio);
+            String savedString = minutesAndSecondsString;
+            dinamicObject->setProperty("duration", savedString);
 
             auto jsonObject = juce::var(dinamicObject.release());
 
@@ -220,39 +263,36 @@ void PlaylistComponent::buttonClicked(Button* button) {
 
     }
     else {
-        /*FileChooser chooser{ "Select a file..." };
-        if (chooser.browseForFileToOpen())
-        {
-            player1->loadURL(URL{ chooser.getResult() });
-            waveformDisplay.loadURL(URL{ chooser.getResult() });
-
-        }*/
-
-        if (std::stoi(button->getComponentID().toStdString()) % 2 != 0) {
         
-            float index = floor(std::stoi(button->getComponentID().toStdString()) / 2);            
-
-            URL url = trackFilesUrl[index];
+        if (button->getComponentID().toStdString().substr(0,1).compare("1") == 0) {            
+            URL url = trackTitlesToURLs[button->getComponentID().toStdString().substr(1)];
             player1->loadURL(url);
             waveformDisplayLeftDeck.loadURL(url);
-
-            //deckGUI1->loadTrack(trackFilesUrl,(int)index);
-            //DBG(std::to_string(floor(std::stoi(button->getComponentID().toStdString()) / 2)));
         }
-        else {
-            float index = floor(std::stoi(button->getComponentID().toStdString()) / 2) - 1;
-            //DBG(trackTitles[(int)index]);
-              
-            URL url = trackFilesUrl[index];
+        else if (button->getComponentID().toStdString().substr(0,1).compare("2") == 0) {            
+            URL url = trackTitlesToURLs[button->getComponentID().toStdString().substr(1)];
             player2->loadURL(url);
             waveformDisplayRightDeck.loadURL(url);
-
-            //deckGUI2->loadTrack(trackFilesUrl,(int)index);
-            //trackFiles[(int)index].;
-            
-            //DBG(std::to_string(floor(std::stoi(button->getComponentID().toStdString()) / 2)-1));
         }
-        //int id = std::stoi(button->getComponentID().toStdString());        
+        
+
+
+        //if (std::stoi(button->getComponentID().toStdString()) % 2 != 0) {
+        //
+        //    float index = floor(std::stoi(button->getComponentID().toStdString()) / 2);            
+
+        //    URL url = trackFilesUrl[index];
+        //    player1->loadURL(url);
+        //    waveformDisplayLeftDeck.loadURL(url);
+        //}
+        //else {
+        //    float index = floor(std::stoi(button->getComponentID().toStdString()) / 2) - 1;
+        //    //DBG(trackTitles[(int)index]);
+        //      
+        //    URL url = trackFilesUrl[index];
+        //    player2->loadURL(url);
+        //    waveformDisplayRightDeck.loadURL(url);
+        //}
     }
     
 }

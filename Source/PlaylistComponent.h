@@ -15,13 +15,15 @@
 #include "DeckGUI.h"
 #include <fstream>
 #include "WaveformDisplay.h"
+#include <map>
+#include <vector>
 using namespace juce;
 
 
 //==============================================================================
 /*
 */
-class PlaylistComponent  : public juce::Component, public TableListBoxModel, public Button::Listener, public FileDragAndDropTarget, public Timer, public AudioSource
+class PlaylistComponent  : public juce::Component, public TableListBoxModel, public Button::Listener, public FileDragAndDropTarget, public Timer, public AudioSource, public TextEditor::Listener
 {
 public:
     PlaylistComponent(AudioPlayer* player1, AudioPlayer* player2, DeckGUI* deckGUI1, DeckGUI* deckGUI2, AudioFormatManager & _formatManagerToUse, AudioThumbnailCache & cacheToUse);
@@ -32,6 +34,8 @@ public:
 
     //void buttonClicked(Button* button) override;
     void buttonClicked(Button*) override;
+
+    void textEditorTextChanged(TextEditor&) override;
 
     void timerCallback() override;
 
@@ -49,7 +53,10 @@ public:
 
     std::vector<URL> trackFilesUrl;
     std::vector<std::string> trackTitles;
+    std::vector<std::string> userFilteredTrackTitles;
     std::vector<std::string> trackDuration;
+
+    std::map<std::string, juce::URL> trackTitlesToURLs;
 
     AudioPlayer* player1;
     AudioPlayer* player2;
