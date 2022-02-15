@@ -9,6 +9,8 @@
 #include <JuceHeader.h>
 #include "MainComponent.h"
 
+using namespace juce;
+
 //==============================================================================
 class TheDJisOPApplication  : public juce::JUCEApplication
 {
