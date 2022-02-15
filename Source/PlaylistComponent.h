@@ -56,6 +56,7 @@ public:
     std::vector<std::string> userFilteredTrackTitles;
     std::vector<std::string> trackDuration;
 
+    std::map<std::string, std::string> trackTitlesToDuration;
     std::map<std::string, juce::URL> trackTitlesToURLs;
 
     AudioPlayer* player1;

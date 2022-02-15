@@ -133,7 +133,7 @@ void PlaylistComponent::paintCell(Graphics& g, int rowNumber, int columnId, int 
     };
 
     if (columnId == 2) {
-        g.drawText(trackDuration[rowNumber], 2, 0, width - 4, height, Justification::centredLeft, false);
+        g.drawText(trackTitlesToDuration[userFilteredTrackTitles[rowNumber]], 2, 0, width - 4, height, Justification::centredLeft, false);
     };
     
 };
@@ -221,9 +221,10 @@ void PlaylistComponent::buttonClicked(Button* button) {
             auto songName = chooser.getResult().getFileName().toStdString();
             userFilteredTrackTitles.push_back(chooser.getResult().getFileName().toStdString());
             trackTitles.push_back(chooser.getResult().getFileName().toStdString());
-            trackDuration.push_back(minutesAndSecondsString);
+            //trackDuration.push_back(minutesAndSecondsString);
             //trackFilesUrl.push_back(URL{ chooser.getResult() });
 
+            trackTitlesToDuration[chooser.getResult().getFileName().toStdString()] = minutesAndSecondsString;
             trackTitlesToURLs[chooser.getResult().getFileName().toStdString()] = URL{ chooser.getResult() };
             
 
