@@ -23,7 +23,7 @@ using namespace juce;
 //==============================================================================
 /*
 */
-class PlaylistComponent  : public juce::Component, public TableListBoxModel, public Button::Listener, public FileDragAndDropTarget, public Timer, public AudioSource, public TextEditor::Listener
+class PlaylistComponent  : public juce::Component, public TableListBoxModel, public Button::Listener, public FileDragAndDropTarget, public Timer, public AudioSource, public TextEditor::Listener/*, public ListBoxModel*/
 {
 public:
     PlaylistComponent(AudioPlayer* player1, AudioPlayer* player2, DeckGUI* deckGUI1, DeckGUI* deckGUI2, AudioFormatManager & _formatManagerToUse, AudioThumbnailCache & cacheToUse);
@@ -47,6 +47,7 @@ public:
     void paintCell(Graphics&, int rowNumber, int columnId, int width, int height, bool rowIsSelected) override;
 
     Component * refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component * existingComponentToUpdate) override;    
+    //Component* refreshComponentForRow(int rowNumber, bool isRowSelected, Component* existingComponentToUpdate) override;
 
     bool isInterestedInFileDrag(const StringArray& files) override;
     void filesDropped(const StringArray& files, int x, int y) override;
@@ -55,6 +56,8 @@ public:
     std::vector<std::string> trackTitles;
     std::vector<std::string> userFilteredTrackTitles;
     std::vector<std::string> trackDuration;
+
+    std::vector< Component*> componentsToUpdate;
 
     std::map<std::string, std::string> trackTitlesToDuration;
     std::map<std::string, juce::URL> trackTitlesToURLs;
@@ -74,6 +77,9 @@ private:
     /*std::vector<std::string>* trackTitles;
     std::vector<juce::URL>* trackFilesUrl;*/    
     TextButton addSongToMyLibraryButton;    
+    TextButton removeSongFromMyLibraryButton;
+
+    juce::var parsedJsonDatabase;
 
     AudioFormatManager formatManager;
     AudioTransportSource transportSource;

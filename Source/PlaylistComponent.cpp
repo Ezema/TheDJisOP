@@ -30,10 +30,51 @@ PlaylistComponent::PlaylistComponent(AudioPlayer* _player1, AudioPlayer* _player
 
     if (File::getCurrentWorkingDirectory().getChildFile("database.json").existsAsFile()) {
         database = File::getCurrentWorkingDirectory().getChildFile("database.json");
+        
+        parsedJsonDatabase = juce::JSON::parse(database);
+        if (parsedJsonDatabase.isArray()) {
+            for (auto item : *parsedJsonDatabase.getArray()) {
+                if (auto object = item.getDynamicObject()) {                    
+                    std::string parsedTrackTitle = object->getProperties().getValueAt(0).toString().toStdString();
+                    trackTitles.push_back(parsedTrackTitle);
+                    userFilteredTrackTitles.push_back(parsedTrackTitle);
+                    trackTitlesToDuration[parsedTrackTitle] = object->getProperties().getValueAt(1).toString().toStdString();
+                    trackTitlesToURLs[parsedTrackTitle] = URL{ object->getProperties().getValueAt(2).toString() };
+
+                }
+            }
+        }
     }
     else {
-        database = File::getCurrentWorkingDirectory().getChildFile("database.json");
+        database = File::getCurrentWorkingDirectory().getChildFile("database.json");                
+        parsedJsonDatabase = juce::JSON::parse(database);
+
     }
+
+    //juce::var parsedJsonDatabase = juce::JSON::parse(database);
+
+    //DBG("type id");
+    //DBG(typeid(parsedJsonDatabase).name());
+    
+
+    //if (parsedJsonDatabase.isArray()) {
+    //    for (auto item : *parsedJsonDatabase.getArray()) {
+    //        if (auto object = item.getDynamicObject()) {
+    //            DBG(typeid(object).name());
+    //            
+    //            std::string parsedTrackTitle = object->getProperties().getValueAt(0).toString().toStdString();
+    //            trackTitles.push_back(parsedTrackTitle);
+    //            userFilteredTrackTitles.push_back(parsedTrackTitle);
+    //            trackTitlesToDuration[parsedTrackTitle] = object->getProperties().getValueAt(1).toString().toStdString();
+    //            trackTitlesToURLs[parsedTrackTitle] = URL{ object->getProperties().getValueAt(2).toString() };
+    //            
+    //        }
+    //            /*if (object->hasProperty("Valid"))
+    //                object->setProperty("Valid", false);*/
+    //    }
+    //}
+
+    
 
     formatManager.registerBasicFormats();
 
@@ -42,10 +83,11 @@ PlaylistComponent::PlaylistComponent(AudioPlayer* _player1, AudioPlayer* _player
 
     addAndMakeVisible(searchBox);
 
-    tableComponent.getHeader().addColumn("Track title",1,1280/4);
-    tableComponent.getHeader().addColumn("Duration", 2, 1280 / 4);
-    tableComponent.getHeader().addColumn("", 3, 1280 / 4);
-    tableComponent.getHeader().addColumn("", 4, 1280 / 4);
+    tableComponent.getHeader().addColumn("Track title",1,1280/2/2);
+    tableComponent.getHeader().addColumn("Duration", 2, 1280 /2/2);
+    tableComponent.getHeader().addColumn("", 3, 1280 / 2 / 3);
+    tableComponent.getHeader().addColumn("", 4, 1280 / 2 / 3);
+    tableComponent.getHeader().addColumn("", 5, 1280 / 2 / 3);
     tableComponent.setModel(this);
 
     addSongToMyLibraryButton.setButtonText("ADD NEW FILE TO MY LIBRARY");
@@ -100,8 +142,7 @@ void PlaylistComponent::resized()
     float widthTenth = getWidth()/10;
 
     tableComponent.setBounds(0, 0, getWidth(), heightTenth*6-30);
-    searchBox.setBounds(0, heightTenth * 6 - 30, getWidth(), 30);
-    DBG(std::to_string(heightTenth * 6));
+    searchBox.setBounds(0, heightTenth * 6 - 30, getWidth(), 30);    
     addSongToMyLibraryButton.setBounds(0, heightTenth * 6, getWidth(), 30);
     
     waveformDisplayLeftDeck.setBounds(0, (heightTenth * 6) + 30, getWidth()/2, (heightTenth*4)-30);
@@ -112,6 +153,7 @@ void PlaylistComponent::resized()
 int PlaylistComponent::getNumRows(){
     //return 0;
     return userFilteredTrackTitles.size();
+    //return trackTitles.size();
 };
 void PlaylistComponent::paintRowBackground(Graphics& g, int rowNumber, int width, int height, bool rowIsSelected){
     if (rowIsSelected) {
@@ -138,7 +180,13 @@ void PlaylistComponent::paintCell(Graphics& g, int rowNumber, int columnId, int 
     
 };
 
+//Component* PlaylistComponent::refreshComponentForRow(int rowNumber, bool isRowSelected, Component* existingComponentToUpdate) {
+//    DBG("refresh plox");
+//    return existingComponentToUpdate;
+//};
+
 Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component* existingComponentToUpdate) {
+    //DBG("INSIDE REFRESH CALLED");
     if (columnId == 1) {        
     };
 
@@ -147,26 +195,89 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
     };
     if (columnId == 3) {
         if (existingComponentToUpdate == nullptr) {            
+            /*DBG("INSIDE REFRESH 3");*/
+            /*DBG("rowNumber");
+            DBG(rowNumber);
+            DBG("song name:");
+            DBG(userFilteredTrackTitles[rowNumber]);*/
             TextButton* button = new TextButton{ "Play on deck 1" };
             button->addListener(this);                                   
             //String id{std::to_string(rowNumber) + std::to_string(columnId) };                                   
             //String id(std::to_string(oddButtonIdCounter));
             //button->setComponentID(id);
             button->setComponentID("1" + userFilteredTrackTitles[rowNumber]);
+            
+            /*DBG("rowNumber");
+            DBG(rowNumber);
+            DBG("play first deck component id");
+            DBG(button->getComponentID());*/
+
             existingComponentToUpdate = button;
-            oddButtonIdCounter= oddButtonIdCounter + 2;
+            componentsToUpdate.push_back(button);
+            //oddButtonIdCounter= oddButtonIdCounter + 2;
+        }
+        else {
+            TextButton* button = new TextButton{ "Play on deck 1" };
+            button->addListener(this);
+            button->setComponentID("1" + userFilteredTrackTitles[rowNumber]);
+            existingComponentToUpdate = button;
+            componentsToUpdate.push_back(button);
         }
     }    
     if (columnId == 4) {
         if (existingComponentToUpdate == nullptr) {
+            /*DBG("INSIDE REFRESH 4");*/
+            /*DBG("rowNumber");
+            DBG(rowNumber);
+            DBG("song name:");
+            DBG(userFilteredTrackTitles[rowNumber]);*/
             TextButton* button = new TextButton{ "Play on deck 2" };
             button->addListener(this);
             //String id{ std::to_string(rowNumber) + std::to_string(columnId) };            
             //String id{ std::to_string(evenButtonIdCounter)};
-            //button->setComponentID(id);
+            //button->setComponentID(id);            
+            button->setComponentID("2" + userFilteredTrackTitles[rowNumber]);           
+            
+            /*DBG("rowNumber");
+            DBG(rowNumber);
+            DBG("play second deck component id");
+            DBG(button->getComponentID());*/
+            existingComponentToUpdate = button;
+            componentsToUpdate.push_back(button);
+            //evenButtonIdCounter = evenButtonIdCounter+2;
+        }
+        else {
+            TextButton* button = new TextButton{ "Play on deck 2" };
+            button->addListener(this);
             button->setComponentID("2" + userFilteredTrackTitles[rowNumber]);
             existingComponentToUpdate = button;
-            evenButtonIdCounter = evenButtonIdCounter+2;
+            componentsToUpdate.push_back(button);
+        }
+    }
+    if (columnId == 5) {
+        if (existingComponentToUpdate == nullptr) {
+            /*DBG("INSIDE REFRESH 5");*/
+            TextButton* button = new TextButton{ "Remove from my library" };
+            button->addListener(this);
+            //String id{ std::to_string(rowNumber) + std::to_string(columnId) };            
+            //String id{ std::to_string(evenButtonIdCounter)};
+            //button->setComponentID(id);
+            
+            button->setComponentID(userFilteredTrackTitles[rowNumber]);
+            /*DBG("rowNumber");
+            DBG(rowNumber);
+            DBG("remove component id");
+            DBG(button->getComponentID());*/
+            existingComponentToUpdate = button;
+            componentsToUpdate.push_back(button);
+            //evenButtonIdCounter = evenButtonIdCounter + 2;
+        }
+        else {
+            TextButton* button = new TextButton{ "Remove from my library" };
+            button->addListener(this);
+            button->setComponentID(userFilteredTrackTitles[rowNumber]);
+            existingComponentToUpdate = button;
+            componentsToUpdate.push_back(button);
         }
     }
     return existingComponentToUpdate;
@@ -230,19 +341,33 @@ void PlaylistComponent::buttonClicked(Button* button) {
 
             auto dinamicObject = std::make_unique<DynamicObject>();
             dinamicObject->setProperty("name", chooser.getResult().getFileName());
-            String savedString = minutesAndSecondsString;
-            dinamicObject->setProperty("duration", savedString);
+            String savedTrackDurationString = minutesAndSecondsString;
+            dinamicObject->setProperty("duration", savedTrackDurationString);
+            URL savedTrackUrl = URL{ chooser.getResult() };
+            //String savedStringTrackUrl = savedTrackUrl.toString(false);
+            dinamicObject->setProperty("url", savedTrackUrl.toString(false));
 
             auto jsonObject = juce::var(dinamicObject.release());
+                        
+            parsedJsonDatabase.append(jsonObject);
+            
+            database.deleteFile();
+            database = File::getCurrentWorkingDirectory().getChildFile("database.json");
+            
+            FileOutputStream outputFile(database);            
+            JSON::writeToStream(outputFile, parsedJsonDatabase);
+            //DBG("Created new json");
 
-            FileOutputStream output(database);
-            JSON::writeToStream(output, jsonObject);
-
+            /*tableComponent.updateContent();
+            for (size_t i = 0; i <= tableComponent.getNumRows(); i++)
+            {
+                tableComponent.repaintRow(i);
+            }*/
             tableComponent.updateContent();
 
-            DBG(typeid(formatManager.createReaderFor(chooser.getResult())->metadataValues.getAllKeys()).name());
+            //DBG(typeid(formatManager.createReaderFor(chooser.getResult())->metadataValues.getAllKeys()).name());
 
-            DBG(typeid(chooser.getResult()).name());
+            //DBG(typeid(chooser.getResult()).name());
 
             /*for (String key : formatManager.createReaderFor(chooser.getResult())->metadataValues.getAllKeys()) {
                 DBG("Key: " + key + " value: " + formatManager.createReaderFor(chooser.getResult())->metadataValues.getValue(key, "unknown"));
@@ -255,12 +380,28 @@ void PlaylistComponent::buttonClicked(Button* button) {
                 }
             }*/
 
+            /*{
+                "someNestedObject": {
+                    "someProperty": 25,
+                        "someOtherProperty" : "a String"
+                },
+                    "someOtherRegularProperty" : false
+            }*/
+
+
+            /*juce::var parsedJson;
+            if (juce::JSON::parse(json, parsedJson).wasOK()) {
+                int value1 = parsedJson["someNestedObject"]["someProperty"];
+                String value2 = parsedJson["someNestedObject"]["someOtherProperty"];
+                bool value3 = parsedJson["someOtherRegularProperty"];
+            }*/
+
             
         }        
 
-        DBG("Directory: "+File::getCurrentWorkingDirectory().getFullPathName().toStdString());
-        auto saved = JSON::parse(database);
-        DBG("result: " + JSON::toString(saved));
+        //DBG("Directory: "+File::getCurrentWorkingDirectory().getFullPathName().toStdString());
+        //auto saved = JSON::parse(database);
+        //DBG("result: " + JSON::toString(saved));
 
     }
     else {
@@ -275,25 +416,101 @@ void PlaylistComponent::buttonClicked(Button* button) {
             player2->loadURL(url);
             waveformDisplayRightDeck.loadURL(url);
         }
-        
+        else {
 
+            
 
-        //if (std::stoi(button->getComponentID().toStdString()) % 2 != 0) {
-        //
-        //    float index = floor(std::stoi(button->getComponentID().toStdString()) / 2);            
+            std::vector<std::string> auxiliaryCopyOne;
+            std::vector<std::string> auxiliaryCopyTwo;
 
-        //    URL url = trackFilesUrl[index];
-        //    player1->loadURL(url);
-        //    waveformDisplayLeftDeck.loadURL(url);
-        //}
-        //else {
-        //    float index = floor(std::stoi(button->getComponentID().toStdString()) / 2) - 1;
-        //    //DBG(trackTitles[(int)index]);
-        //      
-        //    URL url = trackFilesUrl[index];
-        //    player2->loadURL(url);
-        //    waveformDisplayRightDeck.loadURL(url);
-        //}
+            std::string songToRemove = button->getComponentID().toStdString();
+            
+            /*DBG("Clicked remove, Song to remove");
+            DBG(songToRemove);*/
+            
+            std::copy_if(trackTitles.begin(), trackTitles.end(), std::back_inserter(auxiliaryCopyOne), [songToRemove](std::string song) {return song.compare(songToRemove) != 0; });
+            std::copy_if(userFilteredTrackTitles.begin(), userFilteredTrackTitles.end(), std::back_inserter(auxiliaryCopyTwo), [songToRemove](std::string song) {return song.compare(songToRemove) != 0; });
+            trackTitles = auxiliaryCopyOne;
+            userFilteredTrackTitles = auxiliaryCopyTwo;
+            
+            /*DBG("after deleting this is how userFilteredTrackTitles looks ");
+            for (size_t i = 0; i < userFilteredTrackTitles.size(); i++)
+            {
+                DBG(userFilteredTrackTitles[i]);
+            }
+
+            DBG("after deleting this is how trackTitles looks ");
+            for (size_t i = 0; i < trackTitles.size(); i++)
+            {
+                DBG(trackTitles[i]);
+            }*/
+            trackTitlesToURLs.erase(button->getComponentID().toStdString());                        
+            trackTitlesToDuration.erase(button->getComponentID().toStdString());                                    
+            
+            
+
+            //DBG("get num rows");
+            //DBG(tableComponent.getNumRows());
+            //tableComponent.updateContent();
+
+            tableComponent.updateContent();
+            int repaintRows = tableComponent.getNumRows();
+            //DBG("get num rows");
+            //DBG(tableComponent.getNumRows());
+            
+            //for (int i = 0; i < repaintRows; i++)
+            //{
+            //    for (size_t j = 0; j < componentsToUpdate.size(); j++)
+            //    {
+            //        refreshComponentForCell(i, 3, false, componentsToUpdate[j]);
+            //        refreshComponentForCell(i, 4, false, componentsToUpdate[j]);
+            //        refreshComponentForCell(i, 5, false, componentsToUpdate[j]);
+            //    }
+            //    //DBG("call repaint row");
+            //    //DBG(i);
+            //    /*refreshComponentForCell(i, 3, false, nullptr);
+            //    refreshComponentForCell(i, 4, false, nullptr);
+            //    refreshComponentForCell(i, 5, false, nullptr);*/
+            //    //DBG((tableComponent.getNumRows() + 1));
+            //    //tableComponent.repaintRow(i);
+            //}
+            //tableComponent.updateContent();
+
+            //remove from parsed db
+
+            database.deleteFile();
+            database = File::getCurrentWorkingDirectory().getChildFile("database.json");
+            parsedJsonDatabase = JSON::parse(database);
+
+            for (size_t i = 0; i < trackTitles.size(); i++)
+            {
+                auto dinamicObject = std::make_unique<DynamicObject>();
+                dinamicObject->setProperty("name", String{ trackTitles[i] });
+                
+                String savedTrackDurationString = trackTitlesToDuration[trackTitles[i]];
+                dinamicObject->setProperty("duration", savedTrackDurationString);
+                
+                URL savedTrackUrl = trackTitlesToURLs[trackTitles[i]];
+                dinamicObject->setProperty("url", savedTrackUrl.toString(false));
+
+                auto jsonObject = juce::var(dinamicObject.release());
+
+                parsedJsonDatabase.append(jsonObject);
+            }
+
+            ////write in file            
+            FileOutputStream outputFile(database);
+            JSON::writeToStream(outputFile, parsedJsonDatabase);
+
+            ////update table view
+            //tableComponent.updateContent();
+            //for (size_t i = 1; i < (tableComponent.getNumRows()+1); i++)
+            //{
+            //    tableComponent.repaintRow(i);
+            //}
+            //tableComponent.updateContent();
+            
+        }
     }
     
 }
