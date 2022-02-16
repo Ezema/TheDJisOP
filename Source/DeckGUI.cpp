@@ -8,27 +8,36 @@
   ==============================================================================
 */
 
+#pragma once
+
 #include "JuceHeader.h"
 #include "DeckGUI.h"
+//#include "PlaylistComponent.h"
 
 using namespace juce;
 
 //==============================================================================
-DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse,         AudioThumbnailCache & cacheToUse, std::vector<URL>* trackFilesUrl, std::vector<std::string>* trackTitles) : player(_player),
+DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse, std::vector<URL>* trackFilesUrl, std::vector<std::string>* trackTitles/*,PlaylistComponent* playlistComponent*/) : player(_player),
                waveformDisplay(formatManagerToUse, cacheToUse)
 {
 
     //trackTitles = trackTitles;
     //trackFilesUrl = trackFilesUrl;
 
+    //playlistComponent = playlistComponent;
+
     addAndMakeVisible(playButton);
     addAndMakeVisible(stopButton);
-    addAndMakeVisible(fastForwButton);
+    addAndMakeVisible(playFromBeginningButton);
     addAndMakeVisible(nextTrackButton);
     //addAndMakeVisible(loadButton);
        
     addAndMakeVisible(volumeSlider);
+    addAndMakeVisible(volumeLabel);
+    
     addAndMakeVisible(speedSlider);
+       
+    addAndMakeVisible(positionLabel);    
     addAndMakeVisible(positionSlider);
 
     /*addAndMakeVisible(testSliderOne);
@@ -42,23 +51,47 @@ DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, 
     playButton.addListener(this);
     stopButton.addListener(this);
     loadButton.addListener(this);
+    playFromBeginningButton.addListener(this);
+    nextTrackButton.addListener(this);
 
     // Sliders and buttons configuration ==============
 
-    volumeSlider.setSliderStyle(Slider::SliderStyle::Rotary);    
-    speedSlider.setSliderStyle(Slider::SliderStyle::ThreeValueVertical);
-    positionSlider.setSliderStyle(Slider::SliderStyle::IncDecButtons);
     getLookAndFeel().setColour(juce::Slider::thumbColourId, juce::Colours::red);
+
+    volumeLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    volumeLabel.setText("Volume", juce::dontSendNotification);
+    volumeLabel.setColour(juce::Label::textColourId, juce::Colours::yellow);
+    volumeLabel.setJustificationType(juce::Justification::centred);
+    
+    volumeSlider.setSliderStyle(Slider::SliderStyle::Rotary);    
+    volumeSlider.setTextValueSuffix("%");
+    volumeSlider.setRange(0, 100,1);
     volumeSlider.setTextBoxStyle(Slider::TextBoxBelow, true, 100, 25);
+    volumeSlider.setValue(20);
+
+    positionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    positionLabel.setText("Position", juce::dontSendNotification);
+    positionLabel.setColour(juce::Label::textColourId, juce::Colours::yellow);
+    positionLabel.setJustificationType(juce::Justification::centred);
+    
+    positionSlider.setSliderStyle(Slider::SliderStyle::LinearHorizontal);
+    positionSlider.setTextValueSuffix("%");
+    positionSlider.setRange(0, 100, 1);
+    positionSlider.setValue(0);
+    
+    
+    //positionSlider.setSliderStyle(Slider::SliderStyle::IncDecButtons);
+    
+    
     speedSlider.setTextBoxStyle(Slider::TextBoxBelow, true, 100, 25);
 
     volumeSlider.addListener(this);
     speedSlider.addListener(this);
     positionSlider.addListener(this);
 
-    volumeSlider.setRange(0.0, 1.0);
-    speedSlider.setRange(0.0, 100.0);
-    positionSlider.setRange(0.0, 1.0);
+    //volumeSlider.setRange(0.0, 1.0);
+    /*speedSlider.setRange(0.0, 10.0);
+    positionSlider.setRange(0.0, 1.0);    */
 
     // Sliders and buttons configuration ==============
 
@@ -104,13 +137,19 @@ void DeckGUI::resized()
     
     playButton.setBounds(0, 0, deckUIWidthTenth*2, deckUIHeightTenth);
     stopButton.setBounds(deckUIWidthTenth * 2, 0, deckUIWidthTenth * 2, deckUIHeightTenth);
-    fastForwButton.setBounds((deckUIWidthTenth * 2)*2, 0, deckUIWidthTenth * 2, deckUIHeightTenth);
+    playFromBeginningButton.setBounds((deckUIWidthTenth * 2)*2, 0, deckUIWidthTenth * 2, deckUIHeightTenth);
     nextTrackButton.setBounds((deckUIWidthTenth * 2) * 3, 0, deckUIWidthTenth * 2, deckUIHeightTenth);
 
     
-    volumeSlider.setBounds(0, deckUIHeightTenth, deckUIWidthTenth*4, deckUIHeightTenth * 4.5);
-    speedSlider.setBounds(deckUIHeightTenth * 4.5, deckUIHeightTenth, deckUIWidthTenth * 4, deckUIHeightTenth * 4.5);
-    positionSlider.setBounds(0, deckUIHeightTenth * 5.5, deckUIWidthTenth * 4, deckUIHeightTenth * 4.5);        
+    volumeLabel.setBounds(0, deckUIHeightTenth, deckUIWidthTenth * 4, deckUIHeightTenth);    
+    volumeSlider.setBounds(0, deckUIHeightTenth*2, deckUIWidthTenth*4, deckUIHeightTenth * 4);
+    
+
+    positionLabel.setBounds(deckUIWidthTenth * 4, deckUIHeightTenth, deckUIWidthTenth * 4, deckUIHeightTenth);
+    positionSlider.setBounds(deckUIWidthTenth * 4, deckUIHeightTenth * 2, deckUIWidthTenth * 4, deckUIHeightTenth * 4);
+
+    //speedSlider.setBounds(deckUIHeightTenth * 4.5, deckUIHeightTenth, deckUIWidthTenth * 4, deckUIHeightTenth * 4.5);
+    //positionSlider.setBounds(0, deckUIHeightTenth * 5.5, deckUIWidthTenth * 4, deckUIHeightTenth * 4.5);        
 }
 
 void DeckGUI::buttonClicked(Button* button)
@@ -136,6 +175,13 @@ void DeckGUI::buttonClicked(Button* button)
             
         }
     }
+    if (button == &playFromBeginningButton) {        
+        player->setPositionRelative(0);
+    }
+    if (button == &nextTrackButton) {
+        //playlistComponent->handlePlayNextTrack("left");
+    }
+    
 }
 
 void DeckGUI::loadTrack(std::vector<URL> trackFilesUrl, int index)
@@ -160,7 +206,7 @@ void DeckGUI::sliderValueChanged (Slider *slider)
 {
     if (slider == &volumeSlider)
     {
-        player->setGain(slider->getValue());
+        player->setGain(slider->getValue()/100);
     }
 
     if (slider == &speedSlider)
@@ -170,7 +216,7 @@ void DeckGUI::sliderValueChanged (Slider *slider)
     
     if (slider == &positionSlider)
     {
-        player->setPositionRelative(slider->getValue());
+        player->setPositionRelative(slider->getValue()/100);
     }
     
 }

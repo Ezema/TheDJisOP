@@ -12,7 +12,7 @@
 #include "AudioPlayer.h"
 #include "DeckGUI.h"
 #include "PlaylistComponent.h"
-//#include  "Playlist.h"
+
 using namespace juce;
 
 
@@ -47,19 +47,23 @@ private:
     AudioFormatManager formatManager;
     AudioThumbnailCache thumbCache{100}; 
 
+    
+    //PlaylistComponent playlistComponentTwo{ &player1,&player2,&deckGUI1 ,&deckGUI2, formatManager, thumbCache };
+    PlaylistComponent playlistComponent{ &player1,&player2,&deckGUI1 ,&deckGUI2, formatManager, thumbCache };
+
+    PlaylistComponent* myPointer;
+
     AudioPlayer player1{formatManager, &trackFilesUrl, &trackTitles };
-    DeckGUI deckGUI1{&player1, formatManager, thumbCache, &trackFilesUrl, &trackTitles };
+    DeckGUI deckGUI1{&player1, formatManager, thumbCache, &trackFilesUrl, &trackTitles/*, myPointer*/};
 
     AudioPlayer player2{formatManager ,&trackFilesUrl, &trackTitles };
-    DeckGUI deckGUI2{&player2, formatManager, thumbCache, &trackFilesUrl, &trackTitles };
+    DeckGUI deckGUI2{ &player2, formatManager, thumbCache, &trackFilesUrl, &trackTitles/*, myPointer*/};
 
     MixerAudioSource mixerSource; 
 
-    //PlaylistComponent playlistComponent{&player1,&player2,&deckGUI1 ,&deckGUI2, &trackFilesUrl, &trackTitles};
-
-    PlaylistComponent playlistComponent{ &player1,&player2,&deckGUI1 ,&deckGUI2, formatManager, thumbCache };
-
     
     
+    
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

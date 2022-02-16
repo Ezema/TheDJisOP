@@ -23,7 +23,7 @@ using namespace juce;
 //==============================================================================
 /*
 */
-class PlaylistComponent  : public juce::Component, public TableListBoxModel, public Button::Listener, public FileDragAndDropTarget, public Timer, public AudioSource, public TextEditor::Listener/*, public ListBoxModel*/
+class PlaylistComponent  : public juce::Component, public TableListBoxModel, public Button::Listener, public FileDragAndDropTarget, public Timer, public AudioSource, public TextEditor::Listener
 {
 public:
     PlaylistComponent(AudioPlayer* player1, AudioPlayer* player2, DeckGUI* deckGUI1, DeckGUI* deckGUI2, AudioFormatManager & _formatManagerToUse, AudioThumbnailCache & cacheToUse);
@@ -67,9 +67,36 @@ public:
     DeckGUI* deckGUI1;
     DeckGUI* deckGUI2;
 
+    std::string leftDeckNowPlaying;
+    std::string rightDeckNowPlaying;
+
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate);
     void releaseResources();
     void getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill);
+
+    void handlePlayNextTrack(std::string deck);
+
+    //TableListBox tableComponent;
+    ///*std::vector<std::string>* trackTitles;
+    //std::vector<juce::URL>* trackFilesUrl;*/
+    //TextButton addSongToMyLibraryButton;
+    //TextButton removeSongFromMyLibraryButton;
+
+    //juce::var parsedJsonDatabase;
+
+    //AudioFormatManager formatManager;
+    //AudioTransportSource transportSource;
+    //std::unique_ptr<AudioFormatReaderSource> readerSource;
+
+    //TextEditor searchBox;
+
+    //File database;
+
+    //int oddButtonIdCounter = 1;
+    //int evenButtonIdCounter = 2;
+
+    //void saveToJsonDatabase();
+    //void readFromJsonDatabase();
 
 private:
 

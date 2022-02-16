@@ -13,6 +13,9 @@
 #include "JuceHeader.h"
 #include "AudioPlayer.h"
 #include "WaveformDisplay.h"
+//#include "PlaylistComponent.h"
+//#include "PlaylistComponent.h"
+//#include "MainComponent.h"
 
 using namespace juce;
 
@@ -26,7 +29,7 @@ class DeckGUI    : public Component,
                    /*public Timer*/
 {
 public:
-    DeckGUI(AudioPlayer* player, AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse, std::vector<URL>* trackFilesUrl, std::vector<std::string>* trackTitles);
+    DeckGUI(AudioPlayer* player, AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse, std::vector<URL>* trackFilesUrl, std::vector<std::string>* trackTitles /*,PlaylistComponent* playlistComponent*/);
     ~DeckGUI();
 
     void paint (Graphics&) override;
@@ -45,21 +48,26 @@ public:
 
     //void timerCallback() override; 
 
-    WaveformDisplay waveformDisplay;
+    WaveformDisplay waveformDisplay;    
 
     TextButton loadButton{ "LOAD" };
 
     AudioPlayer* player;
+
+    //PlaylistComponent* playlistComponent;
 
     /*std::vector<std::string>* trackTitles;
     std::vector<URL>* trackFilesUrl;*/
 
 private:
 
+    Label volumeLabel;
+    Label positionLabel;
+
     TextButton playButton{"PLAY"};
     TextButton stopButton{"STOP"};
     TextButton nextTrackButton{ "NEXT TRACK" };
-    TextButton fastForwButton{ "FAST FORWARD" };
+    TextButton playFromBeginningButton{ "START OVER" };
     
   
     Slider volumeSlider; 

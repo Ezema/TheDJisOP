@@ -8,6 +8,8 @@
   ==============================================================================
 */
 
+#pragma once
+
 #include <JuceHeader.h>
 #include "PlaylistComponent.h"
 #include <fstream>
@@ -83,11 +85,12 @@ PlaylistComponent::PlaylistComponent(AudioPlayer* _player1, AudioPlayer* _player
 
     addAndMakeVisible(searchBox);
 
-    tableComponent.getHeader().addColumn("Track title",1,1280/2/2);
+
+    tableComponent.getHeader().addColumn("Track title",1,1280 / 2 / 2);
     tableComponent.getHeader().addColumn("Duration", 2, 1280 /2/2);
-    tableComponent.getHeader().addColumn("", 3, 1280 / 2 / 3);
-    tableComponent.getHeader().addColumn("", 4, 1280 / 2 / 3);
-    tableComponent.getHeader().addColumn("", 5, 1280 / 2 / 3);
+    tableComponent.getHeader().addColumn("Play on left deck", 3, 1280 / 2 / 3);
+    tableComponent.getHeader().addColumn("Play on right deck", 4, 1280 / 2 / 3);
+    tableComponent.getHeader().addColumn("Remove", 5, 1280 / 2 / 3);
     tableComponent.setModel(this);
 
     addSongToMyLibraryButton.setButtonText("ADD NEW FILE TO MY LIBRARY");
@@ -139,14 +142,14 @@ void PlaylistComponent::resized()
     // components that your component contains..
 
     float heightTenth = getHeight()/10;    
-    float widthTenth = getWidth()/10;
+    float widthTenth = 1280/10;
 
-    tableComponent.setBounds(0, 0, getWidth(), heightTenth*6-30);
-    searchBox.setBounds(0, heightTenth * 6 - 30, getWidth(), 30);    
-    addSongToMyLibraryButton.setBounds(0, heightTenth * 6, getWidth(), 30);
+    tableComponent.setBounds(0, 0, 1280, heightTenth*6-30);
+    searchBox.setBounds(0, heightTenth * 6 - 30, 1280/2, 30);        
+    addSongToMyLibraryButton.setBounds(0, heightTenth * 6, 1280, 30);
     
-    waveformDisplayLeftDeck.setBounds(0, (heightTenth * 6) + 30, getWidth()/2, (heightTenth*4)-30);
-    waveformDisplayRightDeck.setBounds(getWidth() / 2, (heightTenth * 6) + 30, getWidth()/2, (heightTenth*4)-30);
+    waveformDisplayLeftDeck.setBounds(0, (heightTenth * 6) + 30, 1280/2, (heightTenth*4)-30);
+    waveformDisplayRightDeck.setBounds(1280 / 2, (heightTenth * 6) + 30, 1280/2, (heightTenth*4)-30);
 }
 
 
@@ -407,11 +410,13 @@ void PlaylistComponent::buttonClicked(Button* button) {
     else {
         
         if (button->getComponentID().toStdString().substr(0,1).compare("1") == 0) {            
+            leftDeckNowPlaying = button->getComponentID().toStdString().substr(1);
             URL url = trackTitlesToURLs[button->getComponentID().toStdString().substr(1)];
             player1->loadURL(url);
             waveformDisplayLeftDeck.loadURL(url);
         }
         else if (button->getComponentID().toStdString().substr(0,1).compare("2") == 0) {            
+            rightDeckNowPlaying = button->getComponentID().toStdString().substr(1);
             URL url = trackTitlesToURLs[button->getComponentID().toStdString().substr(1)];
             player2->loadURL(url);
             waveformDisplayRightDeck.loadURL(url);
@@ -539,4 +544,31 @@ void PlaylistComponent::prepareToPlay(int samplesPerBlockExpected, double sample
 void PlaylistComponent::releaseResources() {
 };
 void PlaylistComponent::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill) {
+};
+
+void PlaylistComponent::handlePlayNextTrack(std::string deck) {
+    
+    if (deck.compare("left") == 0) {
+        for (size_t i = 0; i < userFilteredTrackTitles.size(); i++)
+        {
+            if (userFilteredTrackTitles[i].compare(leftDeckNowPlaying) == 0)
+            {
+                URL url = trackTitlesToURLs[userFilteredTrackTitles[i+1]];
+                player1->loadURL(url);
+                waveformDisplayLeftDeck.loadURL(url);
+            }
+        }
+    }
+    if (deck.compare("right") == 0) {
+        for (size_t i = 0; i < userFilteredTrackTitles.size(); i++)
+        {
+            if (userFilteredTrackTitles[i].compare(rightDeckNowPlaying) == 0)
+            {
+                URL url = trackTitlesToURLs[userFilteredTrackTitles[i + 1]];
+                player2->loadURL(url);
+                waveformDisplayRightDeck.loadURL(url);
+            }
+        }
+    }
+    
 };
