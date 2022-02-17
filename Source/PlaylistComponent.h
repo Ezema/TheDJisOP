@@ -114,6 +114,9 @@ private:
 
     TextEditor searchBox;
 
+    Label nowPlayingLeftDeckLabel;
+    Label nowPlayingRightDeckLabel;
+
     File database;
 
     int oddButtonIdCounter = 1;

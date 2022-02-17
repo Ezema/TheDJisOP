@@ -43,9 +43,8 @@ void WaveformDisplay::paint (Graphics& g)
     g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));   // clear the background
 
     g.setColour (Colours::grey);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-
-    g.setColour (Colours::orange);
+    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component    
+    g.setColour (Colours::greenyellow);
     if(fileLoaded)
     {
       audioThumb.drawChannel(g, 
@@ -55,13 +54,14 @@ void WaveformDisplay::paint (Graphics& g)
         0, 
         1.0f
       );
-      g.setColour(Colours::lightgreen);
-      g.drawRect(position * getWidth(), 0, getWidth() / 20, getHeight());
+      g.setColour(Colours::red);
+      g.drawRect(position * getWidth(), 0, getWidth() / 60, getHeight());
     }
     else 
     {
-      g.setFont (20.0f);
-      g.drawText ("File not loaded...", getLocalBounds(),
+      g.setFont (16.0f);
+      g.setColour(Colours::yellow);
+      g.drawText ("Load a song from the playlist...", getLocalBounds(),
                   Justification::centred, true);   // draw some placeholder text
 
     }

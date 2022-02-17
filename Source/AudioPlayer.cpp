@@ -93,14 +93,31 @@ void AudioPlayer::setPositionRelative(double pos)
 
 void AudioPlayer::start()
 {
-    transportSource.start();
+    transportSource.start();    
 }
 void AudioPlayer::stop()
 {
   transportSource.stop();
 }
 
+bool AudioPlayer::getIsPlaying() {  
+    //DBG("is playing?: " + transportSource.isPlaying());
+    return transportSource.isPlaying();
+};
+
+
+
 double AudioPlayer::getPositionRelative()
 {
-    return transportSource.getCurrentPosition() / transportSource.getLengthInSeconds();
+    /*DBG("transportSource.getCurrentPosition");
+    DBG(transportSource.getCurrentPosition());
+    DBG("transportSource.getLengthInSeconds()");
+    DBG(transportSource.getLengthInSeconds());*/    
+    if (transportSource.getLengthInSeconds() > 0) {
+        return (transportSource.getCurrentPosition() / transportSource.getLengthInSeconds())*100;
+    }
+    else {
+        return 0;
+    };
+    
 }

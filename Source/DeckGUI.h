@@ -1,4 +1,4 @@
-/*
+﻿/*
   ==============================================================================
 
     DeckGUI.h
@@ -25,8 +25,8 @@ using namespace juce;
 class DeckGUI    : public Component,
                    public Button::Listener, 
                    public Slider::Listener, 
-                   public FileDragAndDropTarget
-                   /*public Timer*/
+                   public FileDragAndDropTarget,
+                   public Timer
 {
 public:
     DeckGUI(AudioPlayer* player, AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse, std::vector<URL>* trackFilesUrl, std::vector<std::string>* trackTitles /*,PlaylistComponent* playlistComponent*/);
@@ -46,7 +46,7 @@ public:
     bool isInterestedInFileDrag (const StringArray &files) override;
     void filesDropped (const StringArray &files, int x, int y) override; 
 
-    //void timerCallback() override; 
+    void timerCallback() override; 
 
     WaveformDisplay waveformDisplay;    
 
@@ -61,17 +61,19 @@ public:
 
 private:
 
+    Label playbackSpeedLabel;
     Label volumeLabel;
     Label positionLabel;
 
     TextButton playButton{"PLAY"};
     TextButton stopButton{"STOP"};
-    TextButton nextTrackButton{ "NEXT TRACK" };
+    //TextButton nextTrackButton{ "NEXT TRACK" };
     TextButton playFromBeginningButton{ "START OVER" };
-    
-  
+    TextButton loopSongButton{ "LOOP" };
+              
+    bool loopEnabled;
     Slider volumeSlider; 
-    Slider speedSlider;
+    Slider playbackSpeedSlider;
     Slider positionSlider;
 
     /*Slider testSliderOne;

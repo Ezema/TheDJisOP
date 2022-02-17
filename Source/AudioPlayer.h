@@ -29,6 +29,7 @@ class AudioPlayer : public AudioSource {
     void setSpeed(double ratio);
     void setPosition(double posInSecs);
     void setPositionRelative(double pos);
+    bool getIsPlaying();
     
 
     void start();
@@ -39,7 +40,7 @@ class AudioPlayer : public AudioSource {
 
 private:
     AudioFormatManager& formatManager;
-    std::unique_ptr<AudioFormatReaderSource> readerSource;
+    std::unique_ptr<AudioFormatReaderSource> readerSource;    
     AudioTransportSource transportSource; 
     ResamplingAudioSource resampleSource{&transportSource, false, 2};
 
