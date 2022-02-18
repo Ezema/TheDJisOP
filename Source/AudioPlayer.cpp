@@ -15,22 +15,47 @@ using namespace juce;
 AudioPlayer::AudioPlayer(AudioFormatManager& _formatManager, std::vector<URL>* trackFilesUrl, std::vector<std::string>* trackTitles)
 : formatManager(_formatManager)
 {
-
+    addAndMakeVisible(customVisualizer);
 }
 AudioPlayer::~AudioPlayer()
 {
 
 }
 
+void AudioPlayer::resized() {
+
+    customVisualizer.setBounds(0, 0, getWidth(), getHeight());
+
+}
+void AudioPlayer::paint(juce::Graphics& g)
+{
+    /* This demo code just fills the component's background and
+       draws some placeholder text to get you started.
+
+       You should replace everything in this method with your own
+       drawing code..
+    */
+
+    g.fillAll(juce::Colours::pink);   // clear the background
+
+    g.setColour(juce::Colours::pink);
+    g.drawRect(getLocalBounds(), 1);   // draw an outline around the component
+
+    g.setColour(juce::Colours::pink);
+    g.setFont(14.0f);
+}
+
 void AudioPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRate) 
 {
     transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
     resampleSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
+
+    customVisualizer.clear();
 }
 void AudioPlayer::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFill)
-{
-    resampleSource.getNextAudioBlock(bufferToFill);
-
+{    
+    resampleSource.getNextAudioBlock(bufferToFill);   
+    customVisualizer.pushBuffer(bufferToFill);
 }
 void AudioPlayer::releaseResources()
 {
@@ -39,18 +64,22 @@ void AudioPlayer::releaseResources()
 }
 
 void AudioPlayer::loadURL(URL audioURL)
-{
-    DBG("inside load URL");
-    auto* reader = formatManager.createReaderFor(audioURL.createInputStream(false));
-    DBG("inside load URL 2");
+{    
+    auto* reader = formatManager.createReaderFor(audioURL.createInputStream(false));   
     if (reader != nullptr) // good file!
-    {       
-        DBG("good file");
-        std::unique_ptr<AudioFormatReaderSource> newSource (new AudioFormatReaderSource (reader, 
-true)); 
+    {               
+        std::unique_ptr<AudioFormatReaderSource> newSource (new AudioFormatReaderSource (reader,true)); 
         transportSource.setSource (newSource.get(), 0, nullptr, reader->sampleRate);             
-        readerSource.reset (newSource.release());          
+        readerSource.reset(newSource.release());
     }
+
+    //auto* reader = formatManager.createReaderFor(audioURL.createInputStream(false));
+    //if (reader != nullptr) // good file!
+    //{
+    //    std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));
+    //    reverseTransportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
+    //    readerSource.reset(newSource.release());
+    //}
 }
 void AudioPlayer::setGain(double gain)
 {
@@ -66,8 +95,7 @@ void AudioPlayer::setGain(double gain)
 void AudioPlayer::setSpeed(double ratio)
 {
   if (ratio < 0 || ratio > 100.0)
-    {
-        std::cout << "AudioPlayer::setSpeed ratio should be between 0 and 100" << std::endl;
+    {        
     }
     else {
         resampleSource.setResamplingRatio(ratio);
@@ -76,13 +104,13 @@ void AudioPlayer::setSpeed(double ratio)
 void AudioPlayer::setPosition(double posInSecs)
 {
     transportSource.setPosition(posInSecs);
+    
 }
 
 void AudioPlayer::setPositionRelative(double pos)
 {
      if (pos < 0 || pos > 1.0)
     {
-        std::cout << "AudioPlayer::setPositionRelative pos should be between 0 and 1" << std::endl;
     }
     else {
         double posInSecs = transportSource.getLengthInSeconds() * pos;
@@ -100,19 +128,14 @@ void AudioPlayer::stop()
   transportSource.stop();
 }
 
-bool AudioPlayer::getIsPlaying() {  
-    //DBG("is playing?: " + transportSource.isPlaying());
-    return transportSource.isPlaying();
-};
 
+double AudioPlayer::getLengthInSeconds() {
+    return transportSource.getLengthInSeconds();
+}
 
 
 double AudioPlayer::getPositionRelative()
-{
-    /*DBG("transportSource.getCurrentPosition");
-    DBG(transportSource.getCurrentPosition());
-    DBG("transportSource.getLengthInSeconds()");
-    DBG(transportSource.getLengthInSeconds());*/    
+{    
     if (transportSource.getLengthInSeconds() > 0) {
         return (transportSource.getCurrentPosition() / transportSource.getLengthInSeconds())*100;
     }

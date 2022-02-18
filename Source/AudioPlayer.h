@@ -11,10 +11,11 @@
 #pragma once
 
 #include "JuceHeader.h"
+#include "AudioVisualizer.h"
 
 using namespace juce;
 
-class AudioPlayer : public AudioSource {
+class AudioPlayer : public AudioSource, public Component{
   public:
 
     AudioPlayer(AudioFormatManager& _formatManager, std::vector<URL>* trackFilesUrl, std::vector<std::string>* trackTitles);
@@ -29,7 +30,8 @@ class AudioPlayer : public AudioSource {
     void setSpeed(double ratio);
     void setPosition(double posInSecs);
     void setPositionRelative(double pos);
-    bool getIsPlaying();
+
+    double getLengthInSeconds();
     
 
     void start();
@@ -38,11 +40,19 @@ class AudioPlayer : public AudioSource {
     /** get the relative position of the playhead */
     double getPositionRelative();
 
+    void paint(Graphics&) override;
+    void resized() override;
+
 private:
     AudioFormatManager& formatManager;
     std::unique_ptr<AudioFormatReaderSource> readerSource;    
     AudioTransportSource transportSource; 
+    AudioTransportSource reverseTransportSource;
     ResamplingAudioSource resampleSource{&transportSource, false, 2};
+    ResamplingAudioSource reverseResampleSource{ &reverseTransportSource, false, 2 };
+
+    CustomVisualizer customVisualizer;
+    //CustomVisualizer customVisualizer2;
 
 };
 

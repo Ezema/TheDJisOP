@@ -17,12 +17,14 @@
 #include "WaveformDisplay.h"
 #include <map>
 #include <vector>
+
 using namespace juce;
 
 
 //==============================================================================
 /*
 */
+
 class PlaylistComponent  : public juce::Component, public TableListBoxModel, public Button::Listener, public FileDragAndDropTarget, public Timer, public AudioSource, public TextEditor::Listener
 {
 public:
@@ -32,7 +34,6 @@ public:
     void paint (Graphics&) override;
     void resized() override;
 
-    //void buttonClicked(Button* button) override;
     void buttonClicked(Button*) override;
 
     void textEditorTextChanged(TextEditor&) override;
@@ -76,28 +77,6 @@ public:
 
     void handlePlayNextTrack(std::string deck);
 
-    //TableListBox tableComponent;
-    ///*std::vector<std::string>* trackTitles;
-    //std::vector<juce::URL>* trackFilesUrl;*/
-    //TextButton addSongToMyLibraryButton;
-    //TextButton removeSongFromMyLibraryButton;
-
-    //juce::var parsedJsonDatabase;
-
-    //AudioFormatManager formatManager;
-    //AudioTransportSource transportSource;
-    //std::unique_ptr<AudioFormatReaderSource> readerSource;
-
-    //TextEditor searchBox;
-
-    //File database;
-
-    //int oddButtonIdCounter = 1;
-    //int evenButtonIdCounter = 2;
-
-    //void saveToJsonDatabase();
-    //void readFromJsonDatabase();
-
 private:
 
     TableListBox tableComponent;
@@ -115,7 +94,9 @@ private:
     TextEditor searchBox;
 
     Label nowPlayingLeftDeckLabel;
+    Label trackCurrentTimeLeftDeckLabel;
     Label nowPlayingRightDeckLabel;
+    Label trackCurrentTimeRighttDeckLabel;
 
     File database;
 

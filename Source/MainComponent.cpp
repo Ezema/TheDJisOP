@@ -41,6 +41,8 @@ MainComponent::MainComponent()
     addAndMakeVisible(playlistComponent);
     addAndMakeVisible(deckGUI1); 
     addAndMakeVisible(deckGUI2);  
+    addAndMakeVisible(player1);
+    addAndMakeVisible(player2);
     
 
 
@@ -93,9 +95,11 @@ void MainComponent::paint (Graphics& g)
 void MainComponent::resized()
 { 
     int windowTenth= getHeight() / 10;
-    playlistComponent.setBounds(0, 0, getWidth(), windowTenth*6);
-    deckGUI1.setBounds(0, windowTenth *6, getWidth()/2, windowTenth *4);
-    deckGUI2.setBounds(getWidth()/2, windowTenth *6, getWidth()/2, windowTenth *4);
+    playlistComponent.setBounds(0, 0, getWidth(), windowTenth*5);
+    player1.setBounds(0, windowTenth * 5, getWidth() / 2, windowTenth * 2.25);
+    player2.setBounds(getWidth() / 2,windowTenth * 5, getWidth() / 2, windowTenth * 2.25);
+    deckGUI1.setBounds(0, windowTenth *7.25, getWidth()/2, windowTenth *2.75);
+    deckGUI2.setBounds(getWidth()/2, windowTenth * 7.25, getWidth()/2, windowTenth *2.75);
     
 }
 

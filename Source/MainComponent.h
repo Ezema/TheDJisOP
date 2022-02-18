@@ -54,10 +54,10 @@ private:
     PlaylistComponent* myPointer;
 
     AudioPlayer player1{formatManager, &trackFilesUrl, &trackTitles };
-    DeckGUI deckGUI1{&player1, formatManager, thumbCache, &trackFilesUrl, &trackTitles/*, myPointer*/};
+    DeckGUI deckGUI1{&player1, formatManager, thumbCache, &trackFilesUrl, &trackTitles/*, myPointer*/, 1};
 
     AudioPlayer player2{formatManager ,&trackFilesUrl, &trackTitles };
-    DeckGUI deckGUI2{ &player2, formatManager, thumbCache, &trackFilesUrl, &trackTitles/*, myPointer*/};
+    DeckGUI deckGUI2{ &player2, formatManager, thumbCache, &trackFilesUrl, &trackTitles/*, myPointer*/, 2};
 
     MixerAudioSource mixerSource; 
 

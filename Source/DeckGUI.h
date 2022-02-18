@@ -29,7 +29,7 @@ class DeckGUI    : public Component,
                    public Timer
 {
 public:
-    DeckGUI(AudioPlayer* player, AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse, std::vector<URL>* trackFilesUrl, std::vector<std::string>* trackTitles /*,PlaylistComponent* playlistComponent*/);
+    DeckGUI(AudioPlayer* player, AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse, std::vector<URL>* trackFilesUrl, std::vector<std::string>* trackTitles /*,PlaylistComponent* playlistComponent*/, int _guiIdentifier);
     ~DeckGUI();
 
     void paint (Graphics&) override;
@@ -50,28 +50,35 @@ public:
 
     WaveformDisplay waveformDisplay;    
 
-    TextButton loadButton{ "LOAD" };
+    
 
     AudioPlayer* player;
 
-    //PlaylistComponent* playlistComponent;
-
-    /*std::vector<std::string>* trackTitles;
-    std::vector<URL>* trackFilesUrl;*/
-
 private:
+
+    int guiIdentifier;
 
     Label playbackSpeedLabel;
     Label volumeLabel;
     Label positionLabel;
 
+    Label goBackOrJump5SecondsLabel;
+
+    TextButton loadButton{ "LOAD" };
+
+    ArrowButton goBack5secondsButton{ "GO BACK 5 SECONDS",0.5,Colours::red };
+    ArrowButton jump5secondsButton{ "JUMP 5 SECONDS",0,Colours::red };
+
     TextButton playButton{"PLAY"};
     TextButton stopButton{"STOP"};
     //TextButton nextTrackButton{ "NEXT TRACK" };
     TextButton playFromBeginningButton{ "START OVER" };
-    TextButton loopSongButton{ "LOOP" };
+    TextButton loopSongButton{ "LOOP DISABLED" };
+
+    ImageButton tunningImageButton;
               
     bool loopEnabled;
+    bool isPlaying;
     Slider volumeSlider; 
     Slider playbackSpeedSlider;
     Slider positionSlider;

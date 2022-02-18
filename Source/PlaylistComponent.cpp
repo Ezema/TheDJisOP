@@ -15,20 +15,17 @@
 #include <fstream>
 #include <cmath>
 
+
+//CustomVisualizer::CustomVisualizer() {
+//    holdThisOne = true;
+//};
+
 //==============================================================================
 
-PlaylistComponent::PlaylistComponent(AudioPlayer* _player1, AudioPlayer* _player2, DeckGUI* deckGUI1, DeckGUI* deckGUI2, AudioFormatManager& _formatManagerToUse, AudioThumbnailCache& cacheToUse) : player1(_player1), player2(_player2),waveformDisplayLeftDeck(_formatManagerToUse, cacheToUse), waveformDisplayRightDeck(_formatManagerToUse, cacheToUse) {
+PlaylistComponent::PlaylistComponent(AudioPlayer* _player1, AudioPlayer* _player2, DeckGUI* deckGUI1, DeckGUI* deckGUI2, AudioFormatManager& _formatManagerToUse, AudioThumbnailCache& cacheToUse) : player1(_player1), player2(_player2),waveformDisplayLeftDeck(_formatManagerToUse, cacheToUse/*, 1*/), waveformDisplayRightDeck(_formatManagerToUse, cacheToUse/*, 2*/) {
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
-    
-    /*trackFilesUrl = trackFilesUrl;
-    trackTitles = trackTitles;
-    player1 = player1;
-    player2 = player2;
-    deckGUI1 =  deckGUI1;
-    deckGUI2 = deckGUI2;*/
-
-    //formatManagerToUse = _formatManagerToUse;
+        
 
     if (File::getCurrentWorkingDirectory().getChildFile("database.json").existsAsFile()) {
         database = File::getCurrentWorkingDirectory().getChildFile("database.json");
@@ -58,30 +55,46 @@ PlaylistComponent::PlaylistComponent(AudioPlayer* _player1, AudioPlayer* _player
     addAndMakeVisible(waveformDisplayLeftDeck);
     addAndMakeVisible(waveformDisplayRightDeck);
 
+    
     addAndMakeVisible(searchBox);
     addAndMakeVisible(nowPlayingLeftDeckLabel);
     addAndMakeVisible(nowPlayingRightDeckLabel);
+    addAndMakeVisible(trackCurrentTimeLeftDeckLabel);
+    addAndMakeVisible(trackCurrentTimeRighttDeckLabel);
 
     tableComponent.getHeader().addColumn("Track title",1,1280 / 2 / 2);
     tableComponent.getHeader().addColumn("Duration", 2, 1280 /2/2);
     tableComponent.getHeader().addColumn("Play on left deck", 3, 1280 / 2 / 3);
     tableComponent.getHeader().addColumn("Play on right deck", 4, 1280 / 2 / 3);
     tableComponent.getHeader().addColumn("Remove", 5, 1280 / 2 / 3);
-    tableComponent.setModel(this);
+    tableComponent.setModel(this);    
 
     nowPlayingRightDeckLabel.setFont(juce::Font(18.0f, juce::Font::bold));
     nowPlayingRightDeckLabel.setText("Now playing: " + rightDeckNowPlaying, juce::dontSendNotification);
     nowPlayingRightDeckLabel.setColour(juce::Label::textColourId, juce::Colours::orange);
-    nowPlayingRightDeckLabel.setJustificationType(juce::Justification::bottomLeft);
+    nowPlayingRightDeckLabel.setColour(juce::Label::backgroundColourId, Colours::black);
+    nowPlayingRightDeckLabel.setJustificationType(juce::Justification::topLeft);
     
     nowPlayingLeftDeckLabel.setColour(juce::Label::textColourId, juce::Colours::green);
     nowPlayingLeftDeckLabel.setColour(juce::Label::backgroundColourId, Colours::white);
     nowPlayingLeftDeckLabel.setFont(juce::Font(18.0f, juce::Font::bold));    
     nowPlayingLeftDeckLabel.setText("Now playing: " + leftDeckNowPlaying, juce::dontSendNotification);
-    nowPlayingLeftDeckLabel.setJustificationType(juce::Justification::bottomLeft);
+    nowPlayingLeftDeckLabel.setJustificationType(juce::Justification::topLeft);
 
-    addSongToMyLibraryButton.setButtonText("ADD NEW FILE TO MY LIBRARY");    
-    addSongToMyLibraryButton.setColour(TextButton::buttonColourId, Colours::lightgreen);
+    trackCurrentTimeRighttDeckLabel.setFont(Font(18.0f));
+    trackCurrentTimeRighttDeckLabel.setText("", juce::dontSendNotification);
+    trackCurrentTimeRighttDeckLabel.setColour(juce::Label::textColourId, juce::Colours::orange);
+    trackCurrentTimeRighttDeckLabel.setColour(juce::Label::backgroundColourId, Colours::black);
+    trackCurrentTimeRighttDeckLabel.setJustificationType(juce::Justification::bottomLeft);
+    
+    trackCurrentTimeLeftDeckLabel.setFont(Font(18.0f));
+    trackCurrentTimeLeftDeckLabel.setText("", juce::dontSendNotification);
+    trackCurrentTimeLeftDeckLabel.setColour(Label::textColourId, juce::Colours::green);
+    trackCurrentTimeLeftDeckLabel.setColour(Label::backgroundColourId, Colours::white);
+    trackCurrentTimeLeftDeckLabel.setJustificationType(juce::Justification::bottomLeft);
+
+    addSongToMyLibraryButton.setButtonText("ADD NEW FILE TO MY LIBRARY");        
+    addSongToMyLibraryButton.setColour(TextButton::buttonColourId, Colours::mediumvioletred);
     addSongToMyLibraryButton.setColour(TextButton::textColourOnId, Colours::black);
     addSongToMyLibraryButton.setColour(TextButton::textColourOffId, Colours::black);
     //addSongToMyLibraryButton.addListener();
@@ -93,6 +106,7 @@ PlaylistComponent::PlaylistComponent(AudioPlayer* _player1, AudioPlayer* _player
 
     searchBox.addListener(this);
     searchBox.setTextToShowWhenEmpty(String{ "Search in your library" },Colours::black);    
+    searchBox.setColour(TextEditor::textColourId, Colours::black);
     searchBox.setColour(TextEditor::backgroundColourId, Colours::lightpink);    
     searchBox.setFont(juce::Font(15.0f, juce::Font::bold));
     searchBox.setJustification(Justification::centredLeft);
@@ -125,9 +139,7 @@ void PlaylistComponent::paint (juce::Graphics& g)
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
 
     g.setColour (juce::Colours::white);
-    g.setFont (14.0f);
-    g.drawText ("PlaylistComponent", getLocalBounds(),
-                juce::Justification::centred, true);   // draw some placeholder text
+    g.setFont (14.0f);    
 }
 
 void PlaylistComponent::resized()
@@ -138,13 +150,15 @@ void PlaylistComponent::resized()
     float heightTenth = getHeight()/10;    
     float widthTenth = 1280/10;
 
-    tableComponent.setBounds(0, 0, 1280, heightTenth*5-30);
-    searchBox.setBounds(0, heightTenth * 5 - 30, 1280, 30);        
-    addSongToMyLibraryButton.setBounds(0, heightTenth * 5, 1280, 30);
-    nowPlayingLeftDeckLabel.setBounds(0,heightTenth*6-5,1280/2,35);
-    nowPlayingRightDeckLabel.setBounds(1280/2,heightTenth*6-5,1280/2,35);
-    waveformDisplayLeftDeck.setBounds(0, (heightTenth * 6) + 30, 1280/2, (heightTenth*4)-30);
-    waveformDisplayRightDeck.setBounds(1280 / 2, (heightTenth * 6) + 30, 1280/2, (heightTenth*4)-30);
+    tableComponent.setBounds(0, 0, 1280, heightTenth*3);
+    searchBox.setBounds(0, heightTenth * 3, 1280, 30);        
+    addSongToMyLibraryButton.setBounds(0, heightTenth * 3 + 30, 1280, 30);
+    nowPlayingLeftDeckLabel.setBounds(0,heightTenth*3+60,1280/2,18);
+    nowPlayingRightDeckLabel.setBounds(1280/2,heightTenth*3+60,1280/2,18);
+    trackCurrentTimeLeftDeckLabel.setBounds(0, heightTenth *3+78, 1280 / 2, 20);
+    trackCurrentTimeRighttDeckLabel.setBounds(1280 / 2, heightTenth * 3+78, 1280 / 2, 20);
+    waveformDisplayLeftDeck.setBounds(0, (heightTenth * 3) + 98, 1280/2, (heightTenth*5)-27);
+    waveformDisplayRightDeck.setBounds(1280 / 2, (heightTenth * 3) + 98, 1280/2, (heightTenth*5)-27);    
 }
 
 
@@ -182,13 +196,9 @@ void PlaylistComponent::paintCell(Graphics& g, int rowNumber, int columnId, int 
     
 };
 
-//Component* PlaylistComponent::refreshComponentForRow(int rowNumber, bool isRowSelected, Component* existingComponentToUpdate) {
-//    DBG("refresh plox");
-//    return existingComponentToUpdate;
-//};
 
 Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component* existingComponentToUpdate) {
-    //DBG("INSIDE REFRESH CALLED");
+    
     if (columnId == 1) {        
     };
 
@@ -222,11 +232,7 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
     }    
     if (columnId == 4) {
         if (existingComponentToUpdate == nullptr) {
-            /*DBG("INSIDE REFRESH 4");*/
-            /*DBG("rowNumber");
-            DBG(rowNumber);
-            DBG("song name:");
-            DBG(userFilteredTrackTitles[rowNumber]);*/
+            
             TextButton* button = new TextButton{ "Play on deck 2" };
             button->addListener(this);
             button->setColour(TextButton::buttonColourId, Colours::black);
@@ -235,10 +241,6 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
             //button->setComponentID(id);            
             button->setComponentID("2" + userFilteredTrackTitles[rowNumber]);           
             
-            /*DBG("rowNumber");
-            DBG(rowNumber);
-            DBG("play second deck component id");
-            DBG(button->getComponentID());*/
             existingComponentToUpdate = button;
             componentsToUpdate.push_back(button);
             //evenButtonIdCounter = evenButtonIdCounter+2;
@@ -254,7 +256,7 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
     }
     if (columnId == 5) {
         if (existingComponentToUpdate == nullptr) {
-            /*DBG("INSIDE REFRESH 5");*/
+            
             TextButton* button = new TextButton{ "Remove from my library" };
             button->addListener(this);
             button->setColour(TextButton::buttonColourId, Colours::red);
@@ -265,10 +267,7 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
             //button->setComponentID(id);
             
             button->setComponentID(userFilteredTrackTitles[rowNumber]);
-            /*DBG("rowNumber");
-            DBG(rowNumber);
-            DBG("remove component id");
-            DBG(button->getComponentID());*/
+            
             existingComponentToUpdate = button;
             componentsToUpdate.push_back(button);
             //evenButtonIdCounter = evenButtonIdCounter + 2;
@@ -294,12 +293,7 @@ void PlaylistComponent::textEditorTextChanged(TextEditor&) {
     //std::string searchTermInLowerCase = searchTerm;
     //std::transform(searchTermInLowerCase.begin(), searchTermInLowerCase.end(), searchTermInLowerCase.begin(), [](unsigned char c) { return std::tolower(c); });
     std::vector<std::string> trackTitlesInLowerCase = trackTitles;
-    //std::transform(trackTitlesInLowerCase.begin(), trackTitlesInLowerCase.end(), trackTitlesInLowerCase.begin(), ::tolower);
-    
-    /*for (std::string& song : trackTitlesInLowerCase) {
-        std::transform(song.begin(), song.end(), song.begin(),
-            [](char c) { return std::tolower(c); });
-    }*/
+   
 
     std::vector<std::string> auxiliaryCopy;
 
@@ -360,59 +354,24 @@ void PlaylistComponent::buttonClicked(Button* button) {
             
             FileOutputStream outputFile(database);            
             JSON::writeToStream(outputFile, parsedJsonDatabase);
-            //DBG("Created new json");
-
-            /*tableComponent.updateContent();
-            for (size_t i = 0; i <= tableComponent.getNumRows(); i++)
-            {
-                tableComponent.repaintRow(i);
-            }*/
+            
             tableComponent.updateContent();
 
-            //DBG(typeid(formatManager.createReaderFor(chooser.getResult())->metadataValues.getAllKeys()).name());
-
-            //DBG(typeid(chooser.getResult()).name());
-
-            /*for (String key : formatManager.createReaderFor(chooser.getResult())->metadataValues.getAllKeys()) {
-                DBG("Key: " + key + " value: " + formatManager.createReaderFor(chooser.getResult())->metadataValues.getValue(key, "unknown"));
-            };*/
-
-            /*ScopedPointer<AudioFormatReader> reader = formatManager.createReaderFor(chooser.getResult());
-            if (reader) {
-                for (String key : reader->metadataValues.getAllKeys()) {
-                    DBG("Key: " + key + " value: " + reader->metadataValues.getValue(key, "unknown"));
-                }
-            }*/
-
-            /*{
-                "someNestedObject": {
-                    "someProperty": 25,
-                        "someOtherProperty" : "a String"
-                },
-                    "someOtherRegularProperty" : false
-            }*/
-
-
-            /*juce::var parsedJson;
-            if (juce::JSON::parse(json, parsedJson).wasOK()) {
-                int value1 = parsedJson["someNestedObject"]["someProperty"];
-                String value2 = parsedJson["someNestedObject"]["someOtherProperty"];
-                bool value3 = parsedJson["someOtherRegularProperty"];
-            }*/
 
             
         }        
-
-        //DBG("Directory: "+File::getCurrentWorkingDirectory().getFullPathName().toStdString());
-        //auto saved = JSON::parse(database);
-        //DBG("result: " + JSON::toString(saved));
-
     }
     else {
         
         if (button->getComponentID().toStdString().substr(0,1).compare("1") == 0) {            
             leftDeckNowPlaying = button->getComponentID().toStdString().substr(1);
             nowPlayingLeftDeckLabel.setText("Now playing:   " + leftDeckNowPlaying, juce::dontSendNotification);
+                                    
+            auto minutes = (int)floor(player1->getPositionRelative() * transportSource.getLengthInSeconds() / 60);
+            auto seconds = (int)floor(std::fmod(player1->getPositionRelative() * transportSource.getLengthInSeconds(), 60));
+            auto minutesAndSecondsString = std::to_string(minutes) + ":" + std::to_string(seconds);
+            trackCurrentTimeLeftDeckLabel.setText(minutesAndSecondsString,juce::dontSendNotification);
+            
             URL url = trackTitlesToURLs[button->getComponentID().toStdString().substr(1)];
             player1->loadURL(url);
             waveformDisplayLeftDeck.loadURL(url);
@@ -420,6 +379,12 @@ void PlaylistComponent::buttonClicked(Button* button) {
         else if (button->getComponentID().toStdString().substr(0,1).compare("2") == 0) {            
             rightDeckNowPlaying = button->getComponentID().toStdString().substr(1);
             nowPlayingRightDeckLabel.setText("Now playing:  " + rightDeckNowPlaying, juce::dontSendNotification);
+            
+            auto minutes = (int)floor(player2->getPositionRelative() * transportSource.getLengthInSeconds() / 60);
+            auto seconds = (int)floor(std::fmod(player2->getPositionRelative() * transportSource.getLengthInSeconds(), 60));
+            auto minutesAndSecondsString = std::to_string(minutes) + ":" + std::to_string(seconds);
+            trackCurrentTimeRighttDeckLabel.setText(minutesAndSecondsString, juce::dontSendNotification);
+
             URL url = trackTitlesToURLs[button->getComponentID().toStdString().substr(1)];
             player2->loadURL(url);
             waveformDisplayRightDeck.loadURL(url);
@@ -433,56 +398,20 @@ void PlaylistComponent::buttonClicked(Button* button) {
 
             std::string songToRemove = button->getComponentID().toStdString();
             
-            /*DBG("Clicked remove, Song to remove");
-            DBG(songToRemove);*/
             
             std::copy_if(trackTitles.begin(), trackTitles.end(), std::back_inserter(auxiliaryCopyOne), [songToRemove](std::string song) {return song.compare(songToRemove) != 0; });
             std::copy_if(userFilteredTrackTitles.begin(), userFilteredTrackTitles.end(), std::back_inserter(auxiliaryCopyTwo), [songToRemove](std::string song) {return song.compare(songToRemove) != 0; });
             trackTitles = auxiliaryCopyOne;
             userFilteredTrackTitles = auxiliaryCopyTwo;
             
-            /*DBG("after deleting this is how userFilteredTrackTitles looks ");
-            for (size_t i = 0; i < userFilteredTrackTitles.size(); i++)
-            {
-                DBG(userFilteredTrackTitles[i]);
-            }
-
-            DBG("after deleting this is how trackTitles looks ");
-            for (size_t i = 0; i < trackTitles.size(); i++)
-            {
-                DBG(trackTitles[i]);
-            }*/
             trackTitlesToURLs.erase(button->getComponentID().toStdString());                        
             trackTitlesToDuration.erase(button->getComponentID().toStdString());                                    
             
             
 
-            //DBG("get num rows");
-            //DBG(tableComponent.getNumRows());
-            //tableComponent.updateContent();
-
             tableComponent.updateContent();
             int repaintRows = tableComponent.getNumRows();
-            //DBG("get num rows");
-            //DBG(tableComponent.getNumRows());
             
-            //for (int i = 0; i < repaintRows; i++)
-            //{
-            //    for (size_t j = 0; j < componentsToUpdate.size(); j++)
-            //    {
-            //        refreshComponentForCell(i, 3, false, componentsToUpdate[j]);
-            //        refreshComponentForCell(i, 4, false, componentsToUpdate[j]);
-            //        refreshComponentForCell(i, 5, false, componentsToUpdate[j]);
-            //    }
-            //    //DBG("call repaint row");
-            //    //DBG(i);
-            //    /*refreshComponentForCell(i, 3, false, nullptr);
-            //    refreshComponentForCell(i, 4, false, nullptr);
-            //    refreshComponentForCell(i, 5, false, nullptr);*/
-            //    //DBG((tableComponent.getNumRows() + 1));
-            //    //tableComponent.repaintRow(i);
-            //}
-            //tableComponent.updateContent();
 
             //remove from parsed db
 
@@ -510,14 +439,6 @@ void PlaylistComponent::buttonClicked(Button* button) {
             FileOutputStream outputFile(database);
             JSON::writeToStream(outputFile, parsedJsonDatabase);
 
-            ////update table view
-            //tableComponent.updateContent();
-            //for (size_t i = 1; i < (tableComponent.getNumRows()+1); i++)
-            //{
-            //    tableComponent.repaintRow(i);
-            //}
-            //tableComponent.updateContent();
-            
         }
     }
     
@@ -536,17 +457,32 @@ void PlaylistComponent::filesDropped(const StringArray& files, int x, int y) {
 void PlaylistComponent::timerCallback()
 {
     //std::cout << "DeckGUI::timerCallback" << std::endl;
-    waveformDisplayLeftDeck.setPositionRelative(
-        player1->getPositionRelative()/100);
-    waveformDisplayRightDeck.setPositionRelative(
-        player2->getPositionRelative()/100);
+    waveformDisplayLeftDeck.setPositionRelative(player1->getPositionRelative()/100);
+    waveformDisplayRightDeck.setPositionRelative(player2->getPositionRelative()/100);
+        
+    auto currentMinutes = (int)floor(player1->getPositionRelative()/100 * player1->getLengthInSeconds() / 60);    
+    auto currentSeconds = (int)floor(std::fmod(player1->getPositionRelative()/100 * player1->getLengthInSeconds(), 60));    
+    auto totalMinutesDuration = (int)floor(player1->getLengthInSeconds() / 60);
+    auto totalSecondsDuration = (int)floor(std::fmod(player1->getLengthInSeconds(), 60));
+    auto minutesAndSecondsString = std::to_string(currentMinutes) + ":" + std::to_string(currentSeconds) + " / " + std::to_string(totalMinutesDuration) + ":" + std::to_string(totalSecondsDuration);
+    
+    trackCurrentTimeLeftDeckLabel.setText(minutesAndSecondsString, juce::dontSendNotification);
+
+    currentMinutes = (int)floor(player2->getPositionRelative() / 100 * player2->getLengthInSeconds() / 60);
+    currentSeconds = (int)floor(std::fmod(player2->getPositionRelative() / 100 * player2->getLengthInSeconds(), 60));
+    totalMinutesDuration = (int)floor(player2->getLengthInSeconds() / 60);
+    totalSecondsDuration = (int)floor(std::fmod(player2->getLengthInSeconds(), 60));
+    minutesAndSecondsString = std::to_string(currentMinutes) + ":" + std::to_string(currentSeconds) + " / " + std::to_string(totalMinutesDuration) + ":" + std::to_string(totalSecondsDuration);
+    trackCurrentTimeRighttDeckLabel.setText(minutesAndSecondsString, juce::dontSendNotification);
 }
 
 void PlaylistComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate) {
+  
 };
 void PlaylistComponent::releaseResources() {
 };
 void PlaylistComponent::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill) {
+  
 };
 
 void PlaylistComponent::handlePlayNextTrack(std::string deck) {

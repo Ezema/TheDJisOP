@@ -14,12 +14,7 @@
 using namespace juce;
 
 //==============================================================================
-WaveformDisplay::WaveformDisplay(AudioFormatManager & 	formatManagerToUse,
-                                 AudioThumbnailCache & 	cacheToUse) :
-                                 audioThumb(1000, formatManagerToUse, cacheToUse), 
-                                 fileLoaded(false), 
-                                 position(0)
-                          
+WaveformDisplay::WaveformDisplay(AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse /*, int deckUID*/) : audioThumb(1000, formatManagerToUse, cacheToUse), fileLoaded(false), position(0)                          
 {
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
@@ -54,8 +49,13 @@ void WaveformDisplay::paint (Graphics& g)
         0, 
         1.0f
       );
+      g.setOpacity(1);
       g.setColour(Colours::red);
-      g.drawRect(position * getWidth(), 0, getWidth() / 60, getHeight());
+      g.fillRect(position * getWidth(), 0, 2, getHeight());            
+      g.setColour(Colours::darkred);      
+      g.setOpacity(0.5f);
+      g.fillRect(0, 0, position * getWidth(), getHeight());      
+      g.setOpacity(1);      
     }
     else 
     {

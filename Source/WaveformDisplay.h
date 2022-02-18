@@ -21,8 +21,7 @@ class WaveformDisplay    : public Component,
                            public ChangeListener
 {
 public:
-    WaveformDisplay( AudioFormatManager & 	formatManagerToUse,
-                    AudioThumbnailCache & 	cacheToUse );
+    WaveformDisplay( AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse/*, int deckUID*/);
     ~WaveformDisplay();
 
     void paint (Graphics&) override;
