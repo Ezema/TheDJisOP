@@ -320,44 +320,43 @@ void PlaylistComponent::buttonClicked(Button* button) {
                     true));
                 transportSource.setSource(newSource.get(), 0, nullptr, readFile->sampleRate);
                 readerSource.reset(newSource.release());
-            };
+            };            
+
+            if (!(std::find(trackTitles.begin(), trackTitles.end(), chooser.getResult().getFileName().toStdString()) != trackTitles.end())) {
+
+                auto minutes = (int)floor(transportSource.getLengthInSeconds() / 60);
+                auto seconds = (int)floor(std::fmod(transportSource.getLengthInSeconds(), 60));
+                auto minutesAndSecondsString = std::to_string(minutes) + ":" + std::to_string(seconds);
+
+                auto songName = chooser.getResult().getFileName().toStdString();
+                userFilteredTrackTitles.push_back(chooser.getResult().getFileName().toStdString());
+                trackTitles.push_back(chooser.getResult().getFileName().toStdString());
+
+                trackTitlesToDuration[chooser.getResult().getFileName().toStdString()] = minutesAndSecondsString;
+                trackTitlesToURLs[chooser.getResult().getFileName().toStdString()] = URL{ chooser.getResult() };
 
 
-            auto minutes = (int)floor(transportSource.getLengthInSeconds()/60);
-            auto seconds = (int)floor(std::fmod(transportSource.getLengthInSeconds(),60));
-            auto minutesAndSecondsString = std::to_string(minutes) + ":" + std::to_string(seconds);
+                auto dinamicObject = std::make_unique<DynamicObject>();
+                dinamicObject->setProperty("name", chooser.getResult().getFileName());
+                String savedTrackDurationString = minutesAndSecondsString;
+                dinamicObject->setProperty("duration", savedTrackDurationString);
+                URL savedTrackUrl = URL{ chooser.getResult() };
+                //String savedStringTrackUrl = savedTrackUrl.toString(false);
+                dinamicObject->setProperty("url", savedTrackUrl.toString(false));
 
-            auto songName = chooser.getResult().getFileName().toStdString();
-            userFilteredTrackTitles.push_back(chooser.getResult().getFileName().toStdString());
-            trackTitles.push_back(chooser.getResult().getFileName().toStdString());
-            //trackDuration.push_back(minutesAndSecondsString);
-            //trackFilesUrl.push_back(URL{ chooser.getResult() });
+                auto jsonObject = juce::var(dinamicObject.release());
 
-            trackTitlesToDuration[chooser.getResult().getFileName().toStdString()] = minutesAndSecondsString;
-            trackTitlesToURLs[chooser.getResult().getFileName().toStdString()] = URL{ chooser.getResult() };
-            
+                parsedJsonDatabase.append(jsonObject);
 
-            auto dinamicObject = std::make_unique<DynamicObject>();
-            dinamicObject->setProperty("name", chooser.getResult().getFileName());
-            String savedTrackDurationString = minutesAndSecondsString;
-            dinamicObject->setProperty("duration", savedTrackDurationString);
-            URL savedTrackUrl = URL{ chooser.getResult() };
-            //String savedStringTrackUrl = savedTrackUrl.toString(false);
-            dinamicObject->setProperty("url", savedTrackUrl.toString(false));
+                database.deleteFile();
+                database = File::getCurrentWorkingDirectory().getChildFile("database.json");
 
-            auto jsonObject = juce::var(dinamicObject.release());
-                        
-            parsedJsonDatabase.append(jsonObject);
-            
-            database.deleteFile();
-            database = File::getCurrentWorkingDirectory().getChildFile("database.json");
-            
-            FileOutputStream outputFile(database);            
-            JSON::writeToStream(outputFile, parsedJsonDatabase);
-            
-            tableComponent.updateContent();
+                FileOutputStream outputFile(database);
+                JSON::writeToStream(outputFile, parsedJsonDatabase);
 
-
+                tableComponent.updateContent();
+            }
+                
             
         }        
     }
@@ -410,8 +409,6 @@ void PlaylistComponent::buttonClicked(Button* button) {
             
 
             tableComponent.updateContent();
-            int repaintRows = tableComponent.getNumRows();
-            
 
             //remove from parsed db
 

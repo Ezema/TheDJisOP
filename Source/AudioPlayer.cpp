@@ -1,13 +1,3 @@
-/*
-==============================================================================
-
-AudioPlayer.cpp
-Created: 
-Author:  
-
-==============================================================================
-*/
-
 #include "AudioPlayer.h"
 
 using namespace juce;
@@ -32,37 +22,21 @@ void AudioPlayer::resized() {
 }
 void AudioPlayer::paint(juce::Graphics& g)
 {
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
-
-       You should replace everything in this method with your own
-       drawing code..
-    */
-
-    g.fillAll(juce::Colours::black);   // clear the background
-
-    g.setColour(juce::Colours::black);
-    g.drawRect(getLocalBounds(), 1);   // draw an outline around the component
+    g.fillAll(juce::Colours::black);
 
     g.setColour(juce::Colours::black);
     g.setFont(14.0f);
 
     g.setOpacity(1);
     g.setColour(Colours::black);
-    int result = magnitude/*.load()*/;
-    //result = (int)result;
-
-
-    //DBG(previousVolume);
-    //DBG(currentVolume);
     
     if (currentVolume>previousVolume) {        
         g.setColour(Colours::red);
-        g.fillRect((getWidth() / 10 * 8), getHeight()-(getHeight() * currentVolume), (getWidth() / 10) * 2, (- 1));        
+        //g.fillRect((getWidth() / 10 * 8), getHeight()-(getHeight() * currentVolume), (getWidth() / 10) * 2, (- 1));        
         lastKnownY = getHeight() - (getHeight() * currentVolume);
     }
     else {
-        g.fillRect((getWidth() / 10 * 8), lastKnownY, (getWidth() / 10) * 2, (-1));
+        //g.fillRect((getWidth() / 10 * 8), lastKnownY, (getWidth() / 10) * 2, (-1));
     }
 
     if (currentVolume < 0.7) {
@@ -75,15 +49,9 @@ void AudioPlayer::paint(juce::Graphics& g)
         g.setColour(Colours::red);
     }
 
+    //g.fillRect((getWidth() / 10 * 8) +  getWidth() / 30 , getHeight(), (getWidth() / 20), (- 1) * (getHeight() * currentVolume));
+    //g.fillRect((getWidth() / 10 * 8) + getWidth() / 30 + (getWidth() / 20) + getWidth() / 30, getHeight(), (getWidth() / 20), (-1) * (getHeight() * currentVolume));
 
-    g.fillRect((getWidth() / 10 * 8) +  getWidth() / 30 , getHeight(), (getWidth() / 20), (- 1) * (getHeight() * currentVolume));
-
-    g.fillRect((getWidth() / 10 * 8) + getWidth() / 30 + (getWidth() / 20) + getWidth() / 30, getHeight(), (getWidth() / 20), (-1) * (getHeight() * currentVolume));
-
-    //This is working
-    //g.fillRect((getWidth() / 10 * 8), 0, getWidth() / 10 * 2 * currentVolume, getHeight());
-    
-    //g.setColour(Colours::darkred);
 }
 
 void AudioPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRate) 
@@ -98,9 +66,7 @@ void AudioPlayer::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFill)
     resampleSource.getNextAudioBlock(bufferToFill);   
     customVisualizer.pushBuffer(bufferToFill);
     auto mag = bufferToFill.buffer->getMagnitude(bufferToFill.startSample, bufferToFill.numSamples);
-    magnitude.store(mag);    
-    //DBG("magnitude");
-    //DBG(magnitude.load());
+    magnitude.store(mag);   
 }
 void AudioPlayer::releaseResources()
 {
@@ -117,14 +83,6 @@ void AudioPlayer::loadURL(URL audioURL)
         transportSource.setSource (newSource.get(), 0, nullptr, reader->sampleRate);             
         readerSource.reset(newSource.release());
     }
-
-    //auto* reader = formatManager.createReaderFor(audioURL.createInputStream(false));
-    //if (reader != nullptr) // good file!
-    //{
-    //    std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));
-    //    reverseTransportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
-    //    readerSource.reset(newSource.release());
-    //}
 }
 void AudioPlayer::setGain(double gain)
 {
