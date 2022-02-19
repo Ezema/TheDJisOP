@@ -54,19 +54,21 @@ PlaylistComponent::PlaylistComponent(AudioPlayer* _player1, AudioPlayer* _player
 
     addAndMakeVisible(waveformDisplayLeftDeck);
     addAndMakeVisible(waveformDisplayRightDeck);
+    
 
+    playlistWidth = 1280;
     
     addAndMakeVisible(searchBox);
     addAndMakeVisible(nowPlayingLeftDeckLabel);
     addAndMakeVisible(nowPlayingRightDeckLabel);
     addAndMakeVisible(trackCurrentTimeLeftDeckLabel);
-    addAndMakeVisible(trackCurrentTimeRighttDeckLabel);
+    addAndMakeVisible(trackCurrentTimeRighttDeckLabel);    
 
-    tableComponent.getHeader().addColumn("Track title",1,1280 / 2 / 2);
-    tableComponent.getHeader().addColumn("Duration", 2, 1280 /2/2);
-    tableComponent.getHeader().addColumn("Play on left deck", 3, 1280 / 2 / 3);
-    tableComponent.getHeader().addColumn("Play on right deck", 4, 1280 / 2 / 3);
-    tableComponent.getHeader().addColumn("Remove", 5, 1280 / 2 / 3);
+    tableComponent.getHeader().addColumn("Track title",1, playlistWidth / 2 / 2);
+    tableComponent.getHeader().addColumn("Duration", 2, playlistWidth /2/2);
+    tableComponent.getHeader().addColumn("Play on left deck", 3, playlistWidth / 2 / 3);
+    tableComponent.getHeader().addColumn("Play on right deck", 4, playlistWidth / 2 / 3);
+    tableComponent.getHeader().addColumn("Remove", 5, playlistWidth / 2 / 3);
     tableComponent.setModel(this);    
 
     nowPlayingRightDeckLabel.setFont(juce::Font(18.0f, juce::Font::bold));
@@ -150,15 +152,20 @@ void PlaylistComponent::resized()
     float heightTenth = getHeight()/10;    
     float widthTenth = 1280/10;
 
-    tableComponent.setBounds(0, 0, 1280, heightTenth*3);
-    searchBox.setBounds(0, heightTenth * 3, 1280, 30);        
-    addSongToMyLibraryButton.setBounds(0, heightTenth * 3 + 30, 1280, 30);
-    nowPlayingLeftDeckLabel.setBounds(0,heightTenth*3+60,1280/2,18);
-    nowPlayingRightDeckLabel.setBounds(1280/2,heightTenth*3+60,1280/2,18);
-    trackCurrentTimeLeftDeckLabel.setBounds(0, heightTenth *3+78, 1280 / 2, 20);
-    trackCurrentTimeRighttDeckLabel.setBounds(1280 / 2, heightTenth * 3+78, 1280 / 2, 20);
-    waveformDisplayLeftDeck.setBounds(0, (heightTenth * 3) + 98, 1280/2, (heightTenth*5)-27);
-    waveformDisplayRightDeck.setBounds(1280 / 2, (heightTenth * 3) + 98, 1280/2, (heightTenth*5)-27);    
+
+    playlistWidth = getWidth();
+
+    tableComponent.setBounds(0, 0, getWidth(), heightTenth*3);
+    searchBox.setBounds(0, heightTenth * 3, getWidth(), 30);        
+    addSongToMyLibraryButton.setBounds(0, heightTenth * 3 + 30, getWidth(), 30);
+    nowPlayingLeftDeckLabel.setBounds(0,heightTenth*3+60,getWidth()/2,18);
+    nowPlayingRightDeckLabel.setBounds(getWidth()/2,heightTenth*3+60,getWidth()/2,18);
+    trackCurrentTimeLeftDeckLabel.setBounds(0, heightTenth *3+78, getWidth() / 2, 20);
+    trackCurrentTimeRighttDeckLabel.setBounds(getWidth() / 2, heightTenth * 3+78, getWidth() / 2, 20);
+    waveformDisplayLeftDeck.setBounds(0, (heightTenth * 3) + 98, getWidth()/2, (heightTenth*5)-27);
+    waveformDisplayRightDeck.setBounds(getWidth() / 2, (heightTenth * 3) + 98, getWidth()/2, (heightTenth*5)-27);    
+
+    tableComponent.autoSizeAllColumns();
 }
 
 
@@ -178,14 +185,6 @@ void PlaylistComponent::paintRowBackground(Graphics& g, int rowNumber, int width
 
 void PlaylistComponent::paintCell(Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected) {
     
-    /*if (rowIsSelected) {
-        g.fillAll(Colours::black);
-        g.colo
-    }
-    else {
-        g.fillAll(Colours::white);
-    }*/
-
     if (columnId == 1) {
         g.drawText(userFilteredTrackTitles[rowNumber], 2, 0, width - 4, height, Justification::centredLeft, false);
     };
@@ -207,7 +206,7 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
     };
     if (columnId == 3) {
         if (existingComponentToUpdate == nullptr) {                        
-            TextButton* button = new TextButton{ "Play on deck 1" };
+            TextButton* button = new TextButton{ "Play on white deck" };
             button->addListener(this);                              
             button->setColour(TextButton::buttonColourId, Colours::white);            
             button->setColour(TextButton::textColourOnId, Colours::black);
@@ -220,7 +219,7 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
             //oddButtonIdCounter= oddButtonIdCounter + 2;
         }
         else {
-            TextButton* button = new TextButton{ "Play on deck 1" };
+            TextButton* button = new TextButton{ "Play on black deck" };
             button->addListener(this);
             button->setColour(TextButton::buttonColourId, Colours::white);
             button->setColour(TextButton::textColourOnId, Colours::black);
@@ -233,7 +232,7 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
     if (columnId == 4) {
         if (existingComponentToUpdate == nullptr) {
             
-            TextButton* button = new TextButton{ "Play on deck 2" };
+            TextButton* button = new TextButton{ "Play on white deck" };
             button->addListener(this);
             button->setColour(TextButton::buttonColourId, Colours::black);
             //String id{ std::to_string(rowNumber) + std::to_string(columnId) };            
@@ -246,7 +245,7 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
             //evenButtonIdCounter = evenButtonIdCounter+2;
         }
         else {
-            TextButton* button = new TextButton{ "Play on deck 2" };
+            TextButton* button = new TextButton{ "Play on black deck" };
             button->addListener(this);
             button->setColour(TextButton::buttonColourId, Colours::black);
             button->setComponentID("2" + userFilteredTrackTitles[rowNumber]);
@@ -355,6 +354,8 @@ void PlaylistComponent::buttonClicked(Button* button) {
                 JSON::writeToStream(outputFile, parsedJsonDatabase);
 
                 tableComponent.updateContent();
+            }else{
+                songAlreadyAddedAlertWindow.showMessageBox(MessageBoxIconType::InfoIcon, "Error", "You can not add a song with the same name of a song that is already in your playlist", String("OK"), nullptr);
             }
                 
             

@@ -25,7 +25,7 @@ using namespace juce;
 /*
 */
 
-class PlaylistComponent  : public juce::Component, public TableListBoxModel, public Button::Listener, public FileDragAndDropTarget, public Timer, public AudioSource, public TextEditor::Listener
+class PlaylistComponent  : public Component, public TableListBoxModel, public Button::Listener, public FileDragAndDropTarget, public Timer, public AudioSource, public TextEditor::Listener
 {
 public:
     PlaylistComponent(AudioPlayer* player1, AudioPlayer* player2, DeckGUI* deckGUI1, DeckGUI* deckGUI2, AudioFormatManager & _formatManagerToUse, AudioThumbnailCache & cacheToUse);
@@ -85,6 +85,9 @@ private:
     TextButton addSongToMyLibraryButton;    
     TextButton removeSongFromMyLibraryButton;
 
+
+    AlertWindow songAlreadyAddedAlertWindow{ "Error", "You can not add a song with the same name as a song that is already in your playlist", MessageBoxIconType::InfoIcon, nullptr };
+
     juce::var parsedJsonDatabase;
 
     AudioFormatManager formatManager;
@@ -105,6 +108,8 @@ private:
 
     void saveToJsonDatabase();
     void readFromJsonDatabase();    
+
+    double playlistWidth;
    
     /*std::fstream database("database.json");*/
 
