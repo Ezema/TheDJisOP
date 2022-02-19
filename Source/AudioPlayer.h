@@ -15,7 +15,7 @@
 
 using namespace juce;
 
-class AudioPlayer : public AudioSource, public Component{
+class AudioPlayer : public AudioSource, public Component, public Timer{
   public:
 
     AudioPlayer(AudioFormatManager& _formatManager, std::vector<URL>* trackFilesUrl, std::vector<std::string>* trackTitles);
@@ -33,6 +33,7 @@ class AudioPlayer : public AudioSource, public Component{
 
     double getLengthInSeconds();
     
+    void timerCallback() override;
 
     void start();
     void stop();
@@ -52,7 +53,12 @@ private:
     ResamplingAudioSource reverseResampleSource{ &reverseTransportSource, false, 2 };
 
     CustomVisualizer customVisualizer;
-    //CustomVisualizer customVisualizer2;
+    std::atomic<float> magnitude{ 0.0f };
+    
+    int stepsCounter = 1;
+    double lastKnownY;
+    double previousVolume;
+    double currentVolume;
 
 };
 

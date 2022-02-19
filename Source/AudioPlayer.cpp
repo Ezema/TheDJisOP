@@ -16,15 +16,18 @@ AudioPlayer::AudioPlayer(AudioFormatManager& _formatManager, std::vector<URL>* t
 : formatManager(_formatManager)
 {
     addAndMakeVisible(customVisualizer);
+    startTimer(1);
+    currentVolume = 0;
+    previousVolume = 0;
 }
 AudioPlayer::~AudioPlayer()
 {
-
+    stopTimer();
 }
 
 void AudioPlayer::resized() {
 
-    customVisualizer.setBounds(0, 0, getWidth(), getHeight());
+    customVisualizer.setBounds(0, 0, getWidth()/10*8, getHeight());
 
 }
 void AudioPlayer::paint(juce::Graphics& g)
@@ -36,13 +39,51 @@ void AudioPlayer::paint(juce::Graphics& g)
        drawing code..
     */
 
-    g.fillAll(juce::Colours::pink);   // clear the background
+    g.fillAll(juce::Colours::black);   // clear the background
 
-    g.setColour(juce::Colours::pink);
+    g.setColour(juce::Colours::black);
     g.drawRect(getLocalBounds(), 1);   // draw an outline around the component
 
-    g.setColour(juce::Colours::pink);
+    g.setColour(juce::Colours::black);
     g.setFont(14.0f);
+
+    g.setOpacity(1);
+    g.setColour(Colours::black);
+    int result = magnitude/*.load()*/;
+    //result = (int)result;
+
+
+    //DBG(previousVolume);
+    //DBG(currentVolume);
+    
+    if (currentVolume>previousVolume) {        
+        g.setColour(Colours::red);
+        g.fillRect((getWidth() / 10 * 8), getHeight()-(getHeight() * currentVolume), (getWidth() / 10) * 2, (- 1));        
+        lastKnownY = getHeight() - (getHeight() * currentVolume);
+    }
+    else {
+        g.fillRect((getWidth() / 10 * 8), lastKnownY, (getWidth() / 10) * 2, (-1));
+    }
+
+    if (currentVolume < 0.7) {
+        g.setColour(Colours::limegreen);
+    }
+    if (currentVolume > 0.7) {
+        g.setColour(Colours::yellow);
+    }
+    if (currentVolume > 0.85) {
+        g.setColour(Colours::red);
+    }
+
+
+    g.fillRect((getWidth() / 10 * 8) +  getWidth() / 30 , getHeight(), (getWidth() / 20), (- 1) * (getHeight() * currentVolume));
+
+    g.fillRect((getWidth() / 10 * 8) + getWidth() / 30 + (getWidth() / 20) + getWidth() / 30, getHeight(), (getWidth() / 20), (-1) * (getHeight() * currentVolume));
+
+    //This is working
+    //g.fillRect((getWidth() / 10 * 8), 0, getWidth() / 10 * 2 * currentVolume, getHeight());
+    
+    //g.setColour(Colours::darkred);
 }
 
 void AudioPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRate) 
@@ -56,6 +97,10 @@ void AudioPlayer::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFill)
 {    
     resampleSource.getNextAudioBlock(bufferToFill);   
     customVisualizer.pushBuffer(bufferToFill);
+    auto mag = bufferToFill.buffer->getMagnitude(bufferToFill.startSample, bufferToFill.numSamples);
+    magnitude.store(mag);    
+    //DBG("magnitude");
+    //DBG(magnitude.load());
 }
 void AudioPlayer::releaseResources()
 {
@@ -116,6 +161,17 @@ void AudioPlayer::setPositionRelative(double pos)
         double posInSecs = transportSource.getLengthInSeconds() * pos;
         setPosition(posInSecs);
     }
+}
+
+void AudioPlayer::timerCallback() {
+    currentVolume = magnitude;
+    repaint();
+    //previousVolume = magnitude;
+    if (stepsCounter % 2 == 0) {
+        previousVolume = magnitude;
+    }
+    stepsCounter = stepsCounter + 1;
+    
 }
 
 

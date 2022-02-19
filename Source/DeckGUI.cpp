@@ -141,7 +141,7 @@ DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, 
         volumeSlider.setColour(Slider::thumbColourId, Colours::orange);
     };
     volumeSlider.setTextBoxStyle(Slider::TextBoxLeft, true, 50, 25);
-    volumeSlider.setValue(20);
+    volumeSlider.setValue(100);
 
     volumeSlider.addListener(this);
     playbackSpeedSlider.addListener(this);
@@ -204,8 +204,9 @@ void DeckGUI::resized()
         
 
     goBackOrJump5SecondsLabel.setBounds(deckUIWidthTenth, deckUIHeightTenth * 1.2, deckUIWidthTenth*3, deckUIHeightTenth);
-    goBack5secondsButton.setBounds(deckUIWidthTenth*1.5, deckUIHeightTenth * 2, 30, deckUIHeightTenth);
-    jump5secondsButton.setBounds(deckUIWidthTenth*2.5, deckUIHeightTenth * 2, 30, deckUIHeightTenth);
+    
+    goBack5secondsButton.setBounds(deckUIWidthTenth*1.25, deckUIHeightTenth * 2, deckUIWidthTenth * 1 , deckUIHeightTenth);
+    jump5secondsButton.setBounds(deckUIWidthTenth*2.75, deckUIHeightTenth * 2, deckUIWidthTenth * 1, deckUIHeightTenth);
 
 
     positionLabel.setBounds(deckUIWidthTenth * 4.5, deckUIHeightTenth * 1.2, deckUIWidthTenth * 5, deckUIHeightTenth);
