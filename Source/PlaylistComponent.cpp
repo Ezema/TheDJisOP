@@ -111,12 +111,7 @@ PlaylistComponent::PlaylistComponent(AudioPlayer* _player1, AudioPlayer* _player
     searchBox.setColour(TextEditor::textColourId, Colours::black);
     searchBox.setColour(TextEditor::backgroundColourId, Colours::lightpink);    
     searchBox.setFont(juce::Font(15.0f, juce::Font::bold));
-    searchBox.setJustification(Justification::centredLeft);
-    
-    /*searchBox.setColour(1, juce::Colours::white);
-    searchBox.setColour(2, juce::Colours::white);
-    searchBox.setColour(3, juce::Colours::white);
-    searchBox.setColour(4, juce::Colours::white);*/
+    searchBox.setJustification(Justification::centredLeft);    
 
     startTimer(500);
 }
@@ -168,12 +163,10 @@ void PlaylistComponent::resized()
     tableComponent.autoSizeAllColumns();
 }
 
-
-int PlaylistComponent::getNumRows(){
-    //return 0;
-    return userFilteredTrackTitles.size();
-    //return trackTitles.size();
+int PlaylistComponent::getNumRows(){  
+    return userFilteredTrackTitles.size();  
 };
+
 void PlaylistComponent::paintRowBackground(Graphics& g, int rowNumber, int width, int height, bool rowIsSelected){
     if (rowIsSelected) {
         g.fillAll(Colours::orange);
@@ -194,7 +187,6 @@ void PlaylistComponent::paintCell(Graphics& g, int rowNumber, int columnId, int 
     };    
     
 };
-
 
 Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component* existingComponentToUpdate) {
     
@@ -235,9 +227,6 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
             TextButton* button = new TextButton{ "Play on white deck" };
             button->addListener(this);
             button->setColour(TextButton::buttonColourId, Colours::black);
-            //String id{ std::to_string(rowNumber) + std::to_string(columnId) };            
-            //String id{ std::to_string(evenButtonIdCounter)};
-            //button->setComponentID(id);            
             button->setComponentID("2" + userFilteredTrackTitles[rowNumber]);           
             
             existingComponentToUpdate = button;
@@ -261,15 +250,11 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
             button->setColour(TextButton::buttonColourId, Colours::red);
             button->setColour(TextButton::textColourOnId, Colours::black);
             button->setColour(TextButton::textColourOffId, Colours::black);
-            //String id{ std::to_string(rowNumber) + std::to_string(columnId) };            
-            //String id{ std::to_string(evenButtonIdCounter)};
-            //button->setComponentID(id);
             
             button->setComponentID(userFilteredTrackTitles[rowNumber]);
             
             existingComponentToUpdate = button;
             componentsToUpdate.push_back(button);
-            //evenButtonIdCounter = evenButtonIdCounter + 2;
         }
         else {
             TextButton* button = new TextButton{ "Remove from my library" };
@@ -288,22 +273,16 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
 void PlaylistComponent::textEditorTextChanged(TextEditor&) {
         
     std::string searchTerm = searchBox.getText().toStdString();       
-    
-    //std::string searchTermInLowerCase = searchTerm;
-    //std::transform(searchTermInLowerCase.begin(), searchTermInLowerCase.end(), searchTermInLowerCase.begin(), [](unsigned char c) { return std::tolower(c); });
-    std::vector<std::string> trackTitlesInLowerCase = trackTitles;
-   
+        
+    std::vector<std::string> trackTitlesInLowerCase = trackTitles;   
 
     std::vector<std::string> auxiliaryCopy;
 
     std::copy_if(trackTitles.begin(), trackTitles.end(), std::back_inserter(auxiliaryCopy), [searchTerm](std::string song) {return song.rfind(searchTerm,0)==0; });
-    //std::copy_if(trackTitles.begin(), trackTitles.end(), std::back_inserter(trackFilesUrl), [searchTerm](std::string song) {return song.rfind(searchTerm, 0) == 0; });
-
     
     userFilteredTrackTitles = auxiliaryCopy;
 
-    tableComponent.updateContent();
-    
+    tableComponent.updateContent();    
 };
 
 void PlaylistComponent::buttonClicked(Button* button) {    
@@ -355,7 +334,7 @@ void PlaylistComponent::buttonClicked(Button* button) {
 
                 tableComponent.updateContent();
             }else{
-                songAlreadyAddedAlertWindow.showMessageBox(MessageBoxIconType::InfoIcon, "Error", "You can not add a song with the same name of a song that is already in your playlist", String("OK"), nullptr);
+                songAlreadyAddedAlertWindow.showMessageBox(MessageBoxIconType::InfoIcon, "Operation not permitted", "You can not add a song with the same name of a song that is already in your playlist", String("OK"), nullptr);
             }
                 
             
@@ -391,8 +370,6 @@ void PlaylistComponent::buttonClicked(Button* button) {
         }
         else {
 
-            
-
             std::vector<std::string> auxiliaryCopyOne;
             std::vector<std::string> auxiliaryCopyTwo;
 
@@ -406,9 +383,7 @@ void PlaylistComponent::buttonClicked(Button* button) {
             
             trackTitlesToURLs.erase(button->getComponentID().toStdString());                        
             trackTitlesToDuration.erase(button->getComponentID().toStdString());                                    
-            
-            
-
+                        
             tableComponent.updateContent();
 
             //remove from parsed db
@@ -450,6 +425,54 @@ void PlaylistComponent::filesDropped(const StringArray& files, int x, int y) {
     {
         player1->loadURL(URL{ File{files[0]} });
     }*/
+    
+    auto* readFile = formatManager.createReaderFor(URL{ File{files[0]} }.createInputStream(false));
+
+    if (readFile != nullptr) {
+        std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(readFile,
+            true));
+        transportSource.setSource(newSource.get(), 0, nullptr, readFile->sampleRate);
+        readerSource.reset(newSource.release());
+    };
+
+    if (!(std::find(trackTitles.begin(), trackTitles.end(), File{files[0]}.getFileName().toStdString()) != trackTitles.end())) {
+
+        auto minutes = (int)floor(transportSource.getLengthInSeconds() / 60);
+        auto seconds = (int)floor(std::fmod(transportSource.getLengthInSeconds(), 60));
+        auto minutesAndSecondsString = std::to_string(minutes) + ":" + std::to_string(seconds);
+
+        auto songName = File{files[0]}.getFileName().toStdString();
+        userFilteredTrackTitles.push_back(File{files[0]}.getFileName().toStdString());
+        trackTitles.push_back(File{files[0]}.getFileName().toStdString());
+
+        trackTitlesToDuration[File{files[0]}.getFileName().toStdString()] = minutesAndSecondsString;
+        trackTitlesToURLs[File{files[0]}.getFileName().toStdString()] = URL{ File{files[0]} };
+
+
+        auto dinamicObject = std::make_unique<DynamicObject>();
+        dinamicObject->setProperty("name", File{files[0]}.getFileName());
+        String savedTrackDurationString = minutesAndSecondsString;
+        dinamicObject->setProperty("duration", savedTrackDurationString);
+        URL savedTrackUrl = URL{ File{files[0]} };
+        //String savedStringTrackUrl = savedTrackUrl.toString(false);
+        dinamicObject->setProperty("url", savedTrackUrl.toString(false));
+
+        auto jsonObject = juce::var(dinamicObject.release());
+
+        parsedJsonDatabase.append(jsonObject);
+
+        database.deleteFile();
+        database = File::getCurrentWorkingDirectory().getChildFile("database.json");
+
+        FileOutputStream outputFile(database);
+        JSON::writeToStream(outputFile, parsedJsonDatabase);
+
+        tableComponent.updateContent();
+    }
+    else {
+        songAlreadyAddedAlertWindow.showMessageBox(MessageBoxIconType::InfoIcon, "Operation not permitted", "You can not add a song with the same name of a song that is already in your playlist", String("OK"), nullptr);
+    }
+    
 };
 
 void PlaylistComponent::timerCallback()

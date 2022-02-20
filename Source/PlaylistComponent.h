@@ -20,11 +20,6 @@
 
 using namespace juce;
 
-
-//==============================================================================
-/*
-*/
-
 class PlaylistComponent  : public Component, public TableListBoxModel, public Button::Listener, public FileDragAndDropTarget, public Timer, public AudioSource, public TextEditor::Listener
 {
 public:
@@ -47,8 +42,7 @@ public:
     void paintRowBackground(Graphics&, int rowNumber, int width, int height, bool rowIsSelected) override;
     void paintCell(Graphics&, int rowNumber, int columnId, int width, int height, bool rowIsSelected) override;
 
-    Component * refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component * existingComponentToUpdate) override;    
-    //Component* refreshComponentForRow(int rowNumber, bool isRowSelected, Component* existingComponentToUpdate) override;
+    Component * refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component * existingComponentToUpdate) override;        
 
     bool isInterestedInFileDrag(const StringArray& files) override;
     void filesDropped(const StringArray& files, int x, int y) override;
@@ -80,8 +74,6 @@ public:
 private:
 
     TableListBox tableComponent;
-    /*std::vector<std::string>* trackTitles;
-    std::vector<juce::URL>* trackFilesUrl;*/    
     TextButton addSongToMyLibraryButton;    
     TextButton removeSongFromMyLibraryButton;
 
@@ -111,7 +103,6 @@ private:
 
     double playlistWidth;
    
-    /*std::fstream database("database.json");*/
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PlaylistComponent)
 };

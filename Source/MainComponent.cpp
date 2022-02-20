@@ -17,14 +17,6 @@ MainComponent::MainComponent()
     // you add any child components.
     setSize (1280, 720);
 
-    //myPointer = &playlistComponent;    
-
-    /*player1 = new AudioPlayer{ formatManager, &trackFilesUrl, &trackTitles };*/
-    //deckGUI1{ &player1, formatManager, thumbCache, &trackFilesUrl, &trackTitles/*, &playlistComponent*/ };
-    //AudioPlayer player2{ formatManager ,&trackFilesUrl, &trackTitles };
-    //DeckGUI deckGUI2{ &player2, formatManager, thumbCache, &trackFilesUrl, &trackTitles/*, &playlistComponent*/ };
-    //PlaylistComponent playlistComponent{ &player1,&player2,&deckGUI1 ,&deckGUI2, formatManager, thumbCache };
-
     // Some platforms require permissions to open input channels so request that here
     if (RuntimePermissions::isRequired (RuntimePermissions::recordAudio)
         && ! RuntimePermissions::isGranted (RuntimePermissions::recordAudio))
