@@ -6,13 +6,12 @@ AudioPlayer::AudioPlayer(AudioFormatManager& _formatManager, std::vector<URL>* t
 : formatManager(_formatManager)
 {
     addAndMakeVisible(customVisualizer);
-    startTimer(1);
     currentVolume = 0;
     previousVolume = 0;
 }
 AudioPlayer::~AudioPlayer()
 {
-    stopTimer();
+
 }
 
 void AudioPlayer::resized() {
@@ -28,27 +27,7 @@ void AudioPlayer::paint(juce::Graphics& g)
     g.setFont(14.0f);
 
     g.setOpacity(1);
-    g.setColour(Colours::black);
-        
-
-    //DBG(currentVolume - previousVolume);
-    
-    //if (currentVolume>previousVolume) {        
-    //    previousVolume = currentVolume;
-    //    //g.setColour(Colours::red);
-    //    //g.fillRect((getWidth() / 10 * 8), getHeight()-(getHeight() * currentVolume), (getWidth() / 10) * 2, (- 1));        
-    //    lastKnownY = getHeight() - (getHeight() * currentVolume);
-    //    //DBG(lastKnownY);
-    //}
-    //else {
-    //    //g.fillRect((getWidth() / 10 * 8), lastKnownY, (getWidth() / 10) * 2, (-1));
-    //    lastKnownY = lastKnownY - 0.01;
-    //    DBG(lastKnownY);
-    //}
-
-    /*getHeight() - (getHeight() * currentVolume);
-    lastKnownY = lastKnownY - 0.01;
-    DBG(lastKnownY);*/
+    g.setColour(Colours::black);    
 
     if (currentVolume <= 0.7) {
         g.setColour(Colours::limegreen);
@@ -59,7 +38,6 @@ void AudioPlayer::paint(juce::Graphics& g)
     if (currentVolume > 0.85) {
         g.setColour(Colours::red);
     }    
-    //g.fillRect((getWidth() / 10 * 8), getHeight() - (getHeight() * currentVolume), (getWidth() / 10) * 2, (-1));
 
     g.fillRect((getWidth() / 10 * 8) +  getWidth() / 30 , getHeight(), (getWidth() / 20), (- 1) * (getHeight() * currentVolume));
     g.fillRect((getWidth() / 10 * 8) + getWidth() / 30 + (getWidth() / 20) + getWidth() / 30, getHeight(), (getWidth() / 20), (-1) * (getHeight() * currentVolume));
@@ -82,10 +60,6 @@ void AudioPlayer::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFill)
 
     currentVolume = magnitude;
     repaint();
-    /*stepsCounter = stepsCounter + 1;
-    if (stepsCounter % 2 == 0) {
-            previousVolume = magnitude;
-    }*/
     
 }
 void AudioPlayer::releaseResources()
@@ -108,7 +82,7 @@ void AudioPlayer::setGain(double gain)
 {
     if (gain < 0 || gain > 1.0)
     {
-        std::cout << "AudioPlayer::setGain gain should be between 0 and 1" << std::endl;
+
     }
     else {
         transportSource.setGain(gain);
@@ -124,6 +98,7 @@ void AudioPlayer::setSpeed(double ratio)
         resampleSource.setResamplingRatio(ratio);
     }
 }
+
 void AudioPlayer::setPosition(double posInSecs)
 {
     transportSource.setPosition(posInSecs);
@@ -134,24 +109,13 @@ void AudioPlayer::setPositionRelative(double pos)
 {
      if (pos < 0 || pos > 1.0)
     {
+
     }
     else {
         double posInSecs = transportSource.getLengthInSeconds() * pos;
         setPosition(posInSecs);
     }
 }
-
-void AudioPlayer::timerCallback() {
-    //currentVolume = magnitude;
-    //repaint();
-    ////previousVolume = magnitude;
-    //if (stepsCounter % 5 == 0) {
-    //    previousVolume = magnitude;
-    //}
-    //stepsCounter = stepsCounter + 1;
-    
-}
-
 
 void AudioPlayer::start()
 {

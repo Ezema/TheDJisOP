@@ -1,27 +1,14 @@
-/*
-  ==============================================================================
-
-    WaveformDisplay.h
-    Created: 14 Mar 2020 3:50:16pm
-    Author:  matthew
-
-  ==============================================================================
-*/
-
 #pragma once
 
 #include "JuceHeader.h"
 
 using namespace juce;
 
-//==============================================================================
-/*
-*/
 class WaveformDisplay    : public Component, 
                            public ChangeListener
 {
 public:
-    WaveformDisplay( AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse/*, int deckUID*/);
+    WaveformDisplay( AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse);
     ~WaveformDisplay();
 
     void paint (Graphics&) override;

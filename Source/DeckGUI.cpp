@@ -1,23 +1,11 @@
-/*
-  ==============================================================================
-
-    DeckGUI.cpp
-    Created: 13 Mar 2020 6:44:48pm
-    Author:  matthew
-
-  ==============================================================================
-*/
-
 #pragma once
 
 #include "JuceHeader.h"
 #include "DeckGUI.h"
-//#include "PlaylistComponent.h"
 
 using namespace juce;
 
-//==============================================================================
-DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse, std::vector<URL>* trackFilesUrl, std::vector<std::string>* trackTitles/*,PlaylistComponent* playlistComponent*/, int _guiIdentifier) : player(_player),waveformDisplay(formatManagerToUse, cacheToUse), guiIdentifier(_guiIdentifier)
+DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse, std::vector<URL>* trackFilesUrl, std::vector<std::string>* trackTitles, int _guiIdentifier) : player(_player),waveformDisplay(formatManagerToUse, cacheToUse), guiIdentifier(_guiIdentifier)
 {   
     addAndMakeVisible(playButton);
     addAndMakeVisible(stopButton);
@@ -33,10 +21,10 @@ DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, 
     addAndMakeVisible(positionLabel);    
     addAndMakeVisible(positionSlider);
 
-    addAndMakeVisible(jump5secondsButton);
+    addAndMakeVisible(goForward5SecondsButton);
     addAndMakeVisible(goBack5secondsButton);   
 
-    addAndMakeVisible(goBackOrJump5SecondsLabel);
+    addAndMakeVisible(goBackOrGoForward5SecondsLabel);
 
     playButton.addListener(this);
     stopButton.addListener(this);    
@@ -49,22 +37,15 @@ DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, 
     playFromBeginningButton.setColour(TextButton::buttonColourId, Colours::darkviolet);
     loopSongButton.setColour(TextButton::buttonColourId, Colours::darkgrey);    
 
-    goBackOrJump5SecondsLabel.setFont(juce::Font(16.0f, juce::Font::bold));
-    goBackOrJump5SecondsLabel.setText("go back/jump 5 seconds", juce::dontSendNotification);
+    goBackOrGoForward5SecondsLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    goBackOrGoForward5SecondsLabel.setText("go back/go forward 5 seconds", juce::dontSendNotification);
     if (guiIdentifier == 1) {
-        goBackOrJump5SecondsLabel.setColour(juce::Label::textColourId, juce::Colours::blue);
+        goBackOrGoForward5SecondsLabel.setColour(juce::Label::textColourId, juce::Colours::blue);
     };
     if (guiIdentifier == 2) {
-        goBackOrJump5SecondsLabel.setColour(juce::Label::textColourId, juce::Colours::orange);
+        goBackOrGoForward5SecondsLabel.setColour(juce::Label::textColourId, juce::Colours::orange);
     };
-    goBackOrJump5SecondsLabel.setJustificationType(juce::Justification::centred);
-
-    /*if (guiIdentifier == 1) {
-        goBack5secondsButton.setColour(ArrowButton::buttonColourId,)
-    };
-    if (guiIdentifier == 2) {
-        volumeLabel.setColour(juce::Label::textColourId, juce::Colours::orange);
-    };*/
+    goBackOrGoForward5SecondsLabel.setJustificationType(juce::Justification::centred);    
 
     positionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
     positionLabel.setText("Position", juce::dontSendNotification);
@@ -100,8 +81,7 @@ DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, 
         playbackSpeedLabel.setColour(juce::Label::textColourId, juce::Colours::orange);
     };
     
-    playbackSpeedLabel.setJustificationType(juce::Justification::centred);
-    //positionSlider.setSliderStyle(Slider::SliderStyle::IncDecButtons);        
+    playbackSpeedLabel.setJustificationType(juce::Justification::centred);     
     playbackSpeedSlider.setTextBoxStyle(Slider::TextBoxLeft, true, 50, 25);
     playbackSpeedSlider.setSliderStyle(Slider::SliderStyle::IncDecButtons);
 
@@ -147,16 +127,12 @@ DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, 
     playbackSpeedSlider.addListener(this);
     positionSlider.addListener(this);
 
-    jump5secondsButton.addListener(this);
+    goForward5SecondsButton.addListener(this);
     goBack5secondsButton.addListener(this);
     
     loopEnabled = false;
 
-    
-
     startTimer(2000);
-
-
 }
 
 DeckGUI::~DeckGUI()
@@ -172,8 +148,7 @@ void DeckGUI::paint (Graphics& g)
        You should replace everything in this method with your own
        drawing code..
     */
-
-    //g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));   // clear the background
+    
     if (guiIdentifier==1) {
         g.fillAll(Colours::white);
     }
@@ -187,7 +162,6 @@ void DeckGUI::paint (Graphics& g)
 
     g.setColour (Colours::white);
     g.setFont (14.0f);
-    //g.drawText ("TheDJisOP", getLocalBounds(),Justification::centred, true);   // draw some placeholder text    
 }
 
 void DeckGUI::resized()
@@ -202,11 +176,10 @@ void DeckGUI::resized()
     playFromBeginningButton.setBounds((deckUIWidth - (deckUIWidthTenth * 8 + 30)) / 2 +20 + deckUIWidthTenth * 4, 5, deckUIWidthTenth * 2, deckUIHeightTenth);
     loopSongButton.setBounds((deckUIWidth - (deckUIWidthTenth * 8 + 30)) / 2  + 30 + deckUIWidthTenth * 6, 5, deckUIWidthTenth * 2, deckUIHeightTenth);
         
-
-    goBackOrJump5SecondsLabel.setBounds(deckUIWidthTenth, deckUIHeightTenth * 1.2, deckUIWidthTenth*3, deckUIHeightTenth);
+    goBackOrGoForward5SecondsLabel.setBounds(deckUIWidthTenth, deckUIHeightTenth * 1.2, deckUIWidthTenth*3, deckUIHeightTenth);
     
     goBack5secondsButton.setBounds(deckUIWidthTenth*1.25, deckUIHeightTenth * 2, deckUIWidthTenth * 1 , deckUIHeightTenth);
-    jump5secondsButton.setBounds(deckUIWidthTenth*2.75, deckUIHeightTenth * 2, deckUIWidthTenth * 1, deckUIHeightTenth);
+    goForward5SecondsButton.setBounds(deckUIWidthTenth*2.75, deckUIHeightTenth * 2, deckUIWidthTenth * 1, deckUIHeightTenth);
 
 
     positionLabel.setBounds(deckUIWidthTenth * 4.5, deckUIHeightTenth * 1.2, deckUIWidthTenth * 5, deckUIHeightTenth);
@@ -269,18 +242,14 @@ void DeckGUI::buttonClicked(Button* button)
     }    
     if (button == &goBack5secondsButton) {        
         
-        auto currentPositionInSeconds = player->getLengthInSeconds() * player->getPositionRelative()/100;
-        
-        auto minus5SecondsPositionInSeconds = currentPositionInSeconds - 5;
-        
+        auto currentPositionInSeconds = player->getLengthInSeconds() * player->getPositionRelative()/100;        
+        auto minus5SecondsPositionInSeconds = currentPositionInSeconds - 5;        
         player->setPositionRelative(minus5SecondsPositionInSeconds / (player->getLengthInSeconds()));
     }
-    if (button == &jump5secondsButton) {               
+    if (button == &goForward5SecondsButton) {               
         
-        auto currentPositionInSeconds = player->getLengthInSeconds() * player->getPositionRelative()/100;
-        
-        auto plus5SecondsPositionInSeconds = currentPositionInSeconds + 5;
-        
+        auto currentPositionInSeconds = player->getLengthInSeconds() * player->getPositionRelative()/100;        
+        auto plus5SecondsPositionInSeconds = currentPositionInSeconds + 5;        
         player->setPositionRelative(plus5SecondsPositionInSeconds / (player->getLengthInSeconds()));
     }
 }
@@ -316,8 +285,7 @@ void DeckGUI::sliderValueChanged (Slider *slider)
         }
         else if (player->getPositionRelative() - slider->getValue() > 2) {
             player->setPositionRelative(slider->getValue()/100);
-        }
-        
+        }        
     }
     
 }

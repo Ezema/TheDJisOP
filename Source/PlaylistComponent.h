@@ -1,13 +1,3 @@
-/*
-  ==============================================================================
-
-    PlaylistComponent.h
-    Created: 13 Feb 2022 6:57:26pm
-    Author:  windows
-
-  ==============================================================================
-*/
-
 #pragma once
 
 #include <JuceHeader.h>
@@ -20,32 +10,55 @@
 
 using namespace juce;
 
-class PlaylistComponent  : public Component, public TableListBoxModel, public Button::Listener, public FileDragAndDropTarget, public Timer, public AudioSource, public TextEditor::Listener
+class PlaylistComponent  : public Component, public TableListBoxModel, public Button::Listener, public FileDragAndDropTarget, public Timer, public TextEditor::Listener
 {
 public:
-    PlaylistComponent(AudioPlayer* player1, AudioPlayer* player2, DeckGUI* deckGUI1, DeckGUI* deckGUI2, AudioFormatManager & _formatManagerToUse, AudioThumbnailCache & cacheToUse);
+    PlaylistComponent(AudioPlayer* player1, AudioPlayer* player2, AudioFormatManager & _formatManagerToUse, AudioThumbnailCache & cacheToUse);
     ~PlaylistComponent();
 
-    void paint (Graphics&) override;
-    void resized() override;
+private:
 
-    void buttonClicked(Button*) override;
-
-    void textEditorTextChanged(TextEditor&) override;
-
-    void timerCallback() override;
-
-    WaveformDisplay waveformDisplayRightDeck;
-    WaveformDisplay waveformDisplayLeftDeck;
-
-    int getNumRows() override;
+    void paint(Graphics&) override;
     void paintRowBackground(Graphics&, int rowNumber, int width, int height, bool rowIsSelected) override;
     void paintCell(Graphics&, int rowNumber, int columnId, int width, int height, bool rowIsSelected) override;
+    void resized() override;
+    void buttonClicked(Button*) override;
+    void textEditorTextChanged(TextEditor&) override;
+    void timerCallback() override;
+    int getNumRows() override;
 
-    Component * refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component * existingComponentToUpdate) override;        
+    WaveformDisplay waveformDisplayRightDeck;
+    WaveformDisplay waveformDisplayLeftDeck;        
+
+    Component* refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component* existingComponentToUpdate) override;
 
     bool isInterestedInFileDrag(const StringArray& files) override;
     void filesDropped(const StringArray& files, int x, int y) override;
+
+    TableListBox tableComponent;
+    TextButton addSongToMyLibraryButton;    
+    TextButton removeSongFromMyLibraryButton;
+
+    AlertWindow songAlreadyAddedAlertWindow{ "Error", "You can not add a song with the same name of a song that is already in your playlist", MessageBoxIconType::InfoIcon, nullptr };
+    AlertWindow moreThanOnceSongDragAndDroppedAlertWindow{ "Operation not permitted", "You can not drag and drop more than one song at a time", MessageBoxIconType::InfoIcon, nullptr };
+
+    juce::var parsedJsonDatabase;
+
+    AudioFormatManager formatManager;
+    AudioTransportSource transportSource;
+    std::unique_ptr<AudioFormatReaderSource> readerSource;
+
+    TextEditor searchBox;
+
+    Label nowPlayingLeftDeckLabel;
+    Label trackCurrentTimeLeftDeckLabel;
+    Label nowPlayingRightDeckLabel;
+    Label trackCurrentTimeRighttDeckLabel;
+
+    File database;
+
+    void persistentSaveToJsonDatabase(File * fileToSave);
+    void readFromJsonDatabase();    
 
     std::vector<URL> trackFilesUrl;
     std::vector<std::string> trackTitles;
@@ -65,44 +78,9 @@ public:
     std::string leftDeckNowPlaying;
     std::string rightDeckNowPlaying;
 
-    void prepareToPlay(int samplesPerBlockExpected, double sampleRate);
-    void releaseResources();
-    void getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill);
-
     void handlePlayNextTrack(std::string deck);
 
-private:
-
-    TableListBox tableComponent;
-    TextButton addSongToMyLibraryButton;    
-    TextButton removeSongFromMyLibraryButton;
-
-
-    AlertWindow songAlreadyAddedAlertWindow{ "Error", "You can not add a song with the same name as a song that is already in your playlist", MessageBoxIconType::InfoIcon, nullptr };
-
-    juce::var parsedJsonDatabase;
-
-    AudioFormatManager formatManager;
-    AudioTransportSource transportSource;
-    std::unique_ptr<AudioFormatReaderSource> readerSource;
-
-    TextEditor searchBox;
-
-    Label nowPlayingLeftDeckLabel;
-    Label trackCurrentTimeLeftDeckLabel;
-    Label nowPlayingRightDeckLabel;
-    Label trackCurrentTimeRighttDeckLabel;
-
-    File database;
-
-    int oddButtonIdCounter = 1;
-    int evenButtonIdCounter = 2;
-
-    void saveToJsonDatabase();
-    void readFromJsonDatabase();    
-
-    double playlistWidth;
-   
+    double playlistWidth;   
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PlaylistComponent)
 };

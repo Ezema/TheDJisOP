@@ -4,7 +4,7 @@
 using namespace juce;
 
 //==============================================================================
-WaveformDisplay::WaveformDisplay(AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse /*, int deckUID*/) : audioThumb(1000, formatManagerToUse, cacheToUse), fileLoaded(false), position(0)                          
+WaveformDisplay::WaveformDisplay(AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse) : audioThumb(1000, formatManagerToUse, cacheToUse), fileLoaded(false), position(0)                          
 {
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
@@ -61,18 +61,15 @@ void WaveformDisplay::loadURL(URL audioURL)
   fileLoaded  = audioThumb.setSource(new URLInputSource(audioURL));
   if (fileLoaded)
   {
-    
     repaint();
   }
   else {
   }
-
 }
 
 void WaveformDisplay::changeListenerCallback (ChangeBroadcaster *source)
 {    
     repaint();
-
 }
 
 void WaveformDisplay::setPositionRelative(double pos)
@@ -82,8 +79,6 @@ void WaveformDisplay::setPositionRelative(double pos)
     position = pos;
     repaint();
   }
-
-  
 }
 
 

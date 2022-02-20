@@ -1,23 +1,11 @@
-/*
-  ==============================================================================
-
-    This file was auto-generated!
-
-  ==============================================================================
-*/
-
 #include "MainComponent.h"
 
 using namespace juce;
 
-//==============================================================================
 MainComponent::MainComponent()
-{
-    // Make sure you set the size of the component after
-    // you add any child components.
+{    
     setSize (1280, 720);
 
-    // Some platforms require permissions to open input channels so request that here
     if (RuntimePermissions::isRequired (RuntimePermissions::recordAudio)
         && ! RuntimePermissions::isGranted (RuntimePermissions::recordAudio))
     {
@@ -26,7 +14,6 @@ MainComponent::MainComponent()
     }  
     else
     {
-        // Specify the number of input and output channels that we want to open
         setAudioChannels (0, 2);
     }  
 
@@ -36,18 +23,14 @@ MainComponent::MainComponent()
     addAndMakeVisible(player1);
     addAndMakeVisible(player2);
     
-
-
     formatManager.registerBasicFormats();
 }
 
 MainComponent::~MainComponent()
-{
-    // This shuts down the audio device and clears the audio source.
+{    
     shutdownAudio();
 }
 
-//==============================================================================
 void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 {
     player1.prepareToPlay(samplesPerBlockExpected, sampleRate);
@@ -75,7 +58,6 @@ void MainComponent::releaseResources()
     mixerSource.releaseResources();
 }
 
-//==============================================================================
 void MainComponent::paint (Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
