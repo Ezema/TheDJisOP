@@ -60,10 +60,7 @@ void MainComponent::releaseResources()
 
 void MainComponent::paint (Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
-
-    // You can add your drawing code here!
+    g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));    
 }
 
 void MainComponent::resized()

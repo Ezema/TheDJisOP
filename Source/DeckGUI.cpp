@@ -5,7 +5,7 @@
 
 using namespace juce;
 
-DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse, std::vector<URL>* trackFilesUrl, std::vector<std::string>* trackTitles, int _guiIdentifier) : player(_player),waveformDisplay(formatManagerToUse, cacheToUse), guiIdentifier(_guiIdentifier)
+DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse, std::vector<URL>* trackFilesUrl, std::vector<std::string>* trackTitles, int _guiIdentifier) : player(_player), guiIdentifier(_guiIdentifier)
 {   
     addAndMakeVisible(playButton);
     addAndMakeVisible(stopButton);
@@ -30,6 +30,11 @@ DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, 
     stopButton.addListener(this);    
     loopSongButton.addListener(this);    
     playFromBeginningButton.addListener(this);        
+    volumeSlider.addListener(this);
+    playbackSpeedSlider.addListener(this);
+    positionSlider.addListener(this);
+    goForward5SecondsButton.addListener(this);
+    goBack5secondsButton.addListener(this);
 
 
     playButton.setColour(TextButton::buttonColourId, Colours::green);
@@ -70,8 +75,6 @@ DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, 
     positionSlider.setTextBoxStyle(Slider::TextBoxLeft, true, 50, 25);    
     positionSlider.setValue(0);
     
-    
-    
     playbackSpeedLabel.setFont(juce::Font(16.0f, juce::Font::bold));
     playbackSpeedLabel.setText("Playback speed", juce::dontSendNotification);
     if (guiIdentifier == 1) {
@@ -91,7 +94,6 @@ DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, 
     if (guiIdentifier == 2) {
         playbackSpeedSlider.setColour(Slider::textBoxTextColourId, Colours::white);
     };
-
 
     playbackSpeedSlider.setTextValueSuffix("X");
     playbackSpeedSlider.setRange(0.01, 10, 0.01);
@@ -121,14 +123,7 @@ DeckGUI::DeckGUI(AudioPlayer* _player, AudioFormatManager & formatManagerToUse, 
         volumeSlider.setColour(Slider::thumbColourId, Colours::orange);
     };
     volumeSlider.setTextBoxStyle(Slider::TextBoxLeft, true, 50, 25);
-    volumeSlider.setValue(100);
-
-    volumeSlider.addListener(this);
-    playbackSpeedSlider.addListener(this);
-    positionSlider.addListener(this);
-
-    goForward5SecondsButton.addListener(this);
-    goBack5secondsButton.addListener(this);
+    volumeSlider.setValue(100);    
     
     loopEnabled = false;
 
@@ -141,13 +136,7 @@ DeckGUI::~DeckGUI()
 }
 
 void DeckGUI::paint (Graphics& g)
-{
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
-
-       You should replace everything in this method with your own
-       drawing code..
-    */
+{    
     
     if (guiIdentifier==1) {
         g.fillAll(Colours::white);
@@ -181,17 +170,14 @@ void DeckGUI::resized()
     goBack5secondsButton.setBounds(deckUIWidthTenth*1.25, deckUIHeightTenth * 2, deckUIWidthTenth * 1 , deckUIHeightTenth);
     goForward5SecondsButton.setBounds(deckUIWidthTenth*2.75, deckUIHeightTenth * 2, deckUIWidthTenth * 1, deckUIHeightTenth);
 
-
     positionLabel.setBounds(deckUIWidthTenth * 4.5, deckUIHeightTenth * 1.2, deckUIWidthTenth * 5, deckUIHeightTenth);
     positionSlider.setBounds(deckUIWidthTenth * 4.5, deckUIHeightTenth * 2, deckUIWidthTenth * 5, deckUIHeightTenth);
-
     
     playbackSpeedLabel.setBounds(deckUIWidthTenth * 1,deckUIHeightTenth*3, deckUIWidthTenth*3, deckUIHeightTenth);
     playbackSpeedSlider.setBounds(deckUIWidthTenth * 1, deckUIHeightTenth*3.8, deckUIWidthTenth * 3, deckUIHeightTenth);
 
     volumeLabel.setBounds(deckUIWidthTenth * 4.5, deckUIHeightTenth*3, deckUIWidthTenth * 5, deckUIHeightTenth);
     volumeSlider.setBounds((deckUIWidthTenth * 4.5), deckUIHeightTenth*3.8, deckUIWidthTenth *5, deckUIHeightTenth);
-    
 
 }
 
@@ -254,18 +240,6 @@ void DeckGUI::buttonClicked(Button* button)
     }
 }
 
-void DeckGUI::loadTrack(std::vector<URL> trackFilesUrl, int index)
-{
-    FileChooser chooser{ "Select a file..." };
-    if (chooser.browseForFileToOpen())
-    {
-        player->loadURL(URL{ chooser.getResult() });
-        waveformDisplay.loadURL(URL{ chooser.getResult() });
-
-    }
-    
-}
-
 void DeckGUI::sliderValueChanged (Slider *slider)
 {
     if (slider == &volumeSlider)
@@ -288,21 +262,6 @@ void DeckGUI::sliderValueChanged (Slider *slider)
         }        
     }
     
-}
-
-bool DeckGUI::isInterestedInFileDrag (const StringArray &files)
-{
-  std::cout << "DeckGUI::isInterestedInFileDrag" << std::endl;
-  return true; 
-}
-
-void DeckGUI::filesDropped (const StringArray &files, int x, int y)
-{
-  std::cout << "DeckGUI::filesDropped" << std::endl;
-  if (files.size() == 1)
-  {
-    player->loadURL(URL{File{files[0]}});
-  }
 }
 
 void DeckGUI::timerCallback()

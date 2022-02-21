@@ -152,12 +152,6 @@ void PlaylistComponent::paintCell(Graphics& g, int rowNumber, int columnId, int 
 
 Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component* existingComponentToUpdate) {
     
-    if (columnId == 1) {        
-    };
-
-    if (columnId == 2) {
-        
-    };
     if (columnId == 3) {
         if (existingComponentToUpdate == nullptr) {                        
             TextButton* button = new TextButton{ "Play on white deck" };
@@ -184,6 +178,8 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
             TextButton* button = new TextButton{ "Play on black deck" };
             button->addListener(this);
             button->setColour(TextButton::buttonColourId, Colours::black);
+            button->setColour(TextButton::textColourOnId, Colours::white);
+            button->setColour(TextButton::textColourOffId, Colours::white);
             button->setComponentID("2" + userFilteredTrackTitles[rowNumber]);                       
             existingComponentToUpdate = button;            
         }
@@ -222,7 +218,6 @@ Component* PlaylistComponent::refreshComponentForCell(int rowNumber, int columnI
 void PlaylistComponent::textEditorTextChanged(TextEditor&) {
         
     std::string searchTerm = searchBox.getText().toStdString();
-    std::vector<std::string> trackTitlesInLowerCase = trackTitles;   
     std::vector<std::string> auxiliaryCopy;
     std::copy_if(trackTitles.begin(), trackTitles.end(), std::back_inserter(auxiliaryCopy), [searchTerm](std::string song) {return song.rfind(searchTerm,0)==0; });    
     userFilteredTrackTitles = auxiliaryCopy;
@@ -239,9 +234,10 @@ void PlaylistComponent::buttonClicked(Button* button) {
             persistentSaveToJsonDatabase( & chooser.getResult());
         }        
     }
-    else {
-        
+    else {        
         if (button->getComponentID().toStdString().substr(0,1).compare("1") == 0) {            
+            //The user wants to play on the white deck
+            
             leftDeckNowPlaying = button->getComponentID().toStdString().substr(1);
             nowPlayingLeftDeckLabel.setText("Now playing:   " + leftDeckNowPlaying, juce::dontSendNotification);
                                     
@@ -254,7 +250,9 @@ void PlaylistComponent::buttonClicked(Button* button) {
             player1->loadURL(url);
             waveformDisplayLeftDeck.loadURL(url);
         }
-        else if (button->getComponentID().toStdString().substr(0,1).compare("2") == 0) {            
+        else if (button->getComponentID().toStdString().substr(0,1).compare("2") == 0) {     
+            //The user wants to play on the black deck
+
             rightDeckNowPlaying = button->getComponentID().toStdString().substr(1);
             nowPlayingRightDeckLabel.setText("Now playing:  " + rightDeckNowPlaying, juce::dontSendNotification);
             
@@ -268,6 +266,8 @@ void PlaylistComponent::buttonClicked(Button* button) {
             waveformDisplayRightDeck.loadURL(url);
         }
         else {
+            //The user wants to remove the song from the playlist
+
             std::vector<std::string> auxiliaryCopyOne;
             std::vector<std::string> auxiliaryCopyTwo;
             std::string songToRemove = button->getComponentID().toStdString();            
@@ -304,7 +304,7 @@ void PlaylistComponent::buttonClicked(Button* button) {
                 parsedJsonDatabase.append(jsonObject);
             }
 
-            ////write in file            
+            ////write the changes in the file            
             FileOutputStream outputFile(database);
             JSON::writeToStream(outputFile, parsedJsonDatabase);
 
@@ -357,7 +357,6 @@ void PlaylistComponent::persistentSaveToJsonDatabase(File * fileToSave) {
         String savedTrackDurationString = minutesAndSecondsString;
         dinamicObject->setProperty("duration", savedTrackDurationString);
         URL savedTrackUrl = URL{ *fileToSave };
-        //String savedStringTrackUrl = savedTrackUrl.toString(false);
         dinamicObject->setProperty("url", savedTrackUrl.toString(false));
 
         auto jsonObject = juce::var(dinamicObject.release());
@@ -375,12 +374,10 @@ void PlaylistComponent::persistentSaveToJsonDatabase(File * fileToSave) {
     else {
         songAlreadyAddedAlertWindow.showMessageBox(MessageBoxIconType::InfoIcon, "Operation not permitted", "You can not add a song with the same name of a song that is already in your playlist", String("OK"), nullptr);
     }
-
 }
 
 void PlaylistComponent::timerCallback()
-{
-    //std::cout << "DeckGUI::timerCallback" << std::endl;
+{    
     waveformDisplayLeftDeck.setPositionRelative(player1->getPositionRelative()/100);
     waveformDisplayRightDeck.setPositionRelative(player2->getPositionRelative()/100);
         
@@ -399,30 +396,3 @@ void PlaylistComponent::timerCallback()
     minutesAndSecondsString = std::to_string(currentMinutes) + ":" + std::to_string(currentSeconds) + " / " + std::to_string(totalMinutesDuration) + ":" + std::to_string(totalSecondsDuration);
     trackCurrentTimeRighttDeckLabel.setText(minutesAndSecondsString, juce::dontSendNotification);
 }
-
-void PlaylistComponent::handlePlayNextTrack(std::string deck) {
-    
-    if (deck.compare("left") == 0) {
-        for (size_t i = 0; i < userFilteredTrackTitles.size(); i++)
-        {
-            if (userFilteredTrackTitles[i].compare(leftDeckNowPlaying) == 0)
-            {
-                URL url = trackTitlesToURLs[userFilteredTrackTitles[i+1]];
-                player1->loadURL(url);
-                waveformDisplayLeftDeck.loadURL(url);
-            }
-        }
-    }
-    if (deck.compare("right") == 0) {
-        for (size_t i = 0; i < userFilteredTrackTitles.size(); i++)
-        {
-            if (userFilteredTrackTitles[i].compare(rightDeckNowPlaying) == 0)
-            {
-                URL url = trackTitlesToURLs[userFilteredTrackTitles[i + 1]];
-                player2->loadURL(url);
-                waveformDisplayRightDeck.loadURL(url);
-            }
-        }
-    }
-    
-};

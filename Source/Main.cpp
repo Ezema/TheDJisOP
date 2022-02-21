@@ -1,7 +1,7 @@
 /*
   ==============================================================================
 
-    This file contains the basic startup code for a JUCE application.
+    This file contains the basic startup code for a JUCE application and was created by PROJUCER automatically
 
   ==============================================================================
 */
@@ -11,11 +11,10 @@
 
 using namespace juce;
 
-//==============================================================================
 class TheDJisOPApplication  : public juce::JUCEApplication
 {
 public:
-    //==============================================================================
+
     TheDJisOPApplication() {}
 
     const juce::String getApplicationName() override       { return ProjectInfo::projectName; }
@@ -86,13 +85,6 @@ public:
             // whatever you need.
             JUCEApplication::getInstance()->systemRequestedQuit();
         }
-
-        /* Note: Be careful if you override any DocumentWindow methods - the base
-           class uses a lot of them, so by overriding you might break its functionality.
-           It's best to do all your work in your content component instead, but if
-           you really have to override any DocumentWindow methods, make sure your
-           subclass also calls the superclass's method.
-        */
 
     private:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)

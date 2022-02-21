@@ -13,6 +13,7 @@ using namespace juce;
 class PlaylistComponent  : public Component, public TableListBoxModel, public Button::Listener, public FileDragAndDropTarget, public Timer, public TextEditor::Listener
 {
 public:
+    // constructor and destructor
     PlaylistComponent(AudioPlayer* player1, AudioPlayer* player2, AudioFormatManager & _formatManagerToUse, AudioThumbnailCache & cacheToUse);
     ~PlaylistComponent();
 
@@ -77,8 +78,6 @@ private:
 
     std::string leftDeckNowPlaying;
     std::string rightDeckNowPlaying;
-
-    void handlePlayNextTrack(std::string deck);
 
     double playlistWidth;   
 

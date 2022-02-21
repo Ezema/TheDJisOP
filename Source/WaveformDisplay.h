@@ -4,24 +4,27 @@
 
 using namespace juce;
 
-class WaveformDisplay    : public Component, 
-                           public ChangeListener
+class WaveformDisplay : public Component, public ChangeListener
 {
 public:
+    // Constructor and destructor
     WaveformDisplay( AudioFormatManager & formatManagerToUse, AudioThumbnailCache & cacheToUse);
-    ~WaveformDisplay();
+    ~WaveformDisplay();    
 
-    void paint (Graphics&) override;
-    void resized() override;
-
-    void changeListenerCallback (ChangeBroadcaster *source) override;
-
+    // load song URL into AudioThumbnail instance
     void loadURL(URL audioURL);
 
-    /** set the relative position of the playhead*/
+    // set the relative position of the playhead
     void setPositionRelative(double pos);
 
 private:
+
+    // inherited from JUCE Component class
+    void paint(Graphics&) override;
+    void resized() override;
+    // inherited from JUCE ChangeListener class
+    void changeListenerCallback(ChangeBroadcaster* source) override;
+
     AudioThumbnail audioThumb;
     bool fileLoaded; 
     double position;

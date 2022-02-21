@@ -7,7 +7,6 @@ AudioPlayer::AudioPlayer(AudioFormatManager& _formatManager, std::vector<URL>* t
 {
     addAndMakeVisible(customVisualizer);
     currentVolume = 0;
-    previousVolume = 0;
 }
 AudioPlayer::~AudioPlayer()
 {
@@ -55,9 +54,10 @@ void AudioPlayer::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFill)
 {    
     resampleSource.getNextAudioBlock(bufferToFill);   
     customVisualizer.pushBuffer(bufferToFill);
-    auto mag = bufferToFill.buffer->getMagnitude(bufferToFill.startSample, bufferToFill.numSamples);
-    magnitude.store(mag);   
+    auto auxiliary = bufferToFill.buffer->getMagnitude(bufferToFill.startSample, bufferToFill.numSamples);
+    magnitude.store(auxiliary);
 
+    // save the current relative volume and repaint
     currentVolume = magnitude;
     repaint();
     
