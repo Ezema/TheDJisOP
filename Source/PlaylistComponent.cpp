@@ -75,7 +75,7 @@ PlaylistComponent::PlaylistComponent(AudioPlayer* _player1, AudioPlayer* _player
     trackCurrentTimeLeftDeckLabel.setColour(Label::backgroundColourId, Colours::white);
     trackCurrentTimeLeftDeckLabel.setJustificationType(juce::Justification::bottomLeft);
 
-    addSongToMyLibraryButton.setButtonText("ADD NEW FILE TO MY LIBRARY");        
+    addSongToMyLibraryButton.setButtonText("ADD A NEW FILE TO MY LIBRARY");        
     addSongToMyLibraryButton.setColour(TextButton::buttonColourId, Colours::mediumvioletred);
     addSongToMyLibraryButton.setColour(TextButton::textColourOnId, Colours::black);
     addSongToMyLibraryButton.setColour(TextButton::textColourOffId, Colours::black);    
